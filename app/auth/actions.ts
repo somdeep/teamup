@@ -6,7 +6,7 @@ import { redirect } from "next/navigation";
 import { authOrigin, isLive, supabaseKey, supabaseUrl } from "../../lib/auth-config";
 import { newPasswordError, readEmail, readText, validEmailToken } from "../../lib/auth-input";
 import { isGoogleAvailable } from "../../lib/google-auth";
-import { readSignupProfile } from "../../lib/signup-profile";
+import { hasCompletedSignupProfile, readSignupProfile } from "../../lib/signup-profile";
 import { supabase } from "../../lib/supabase";
 
 export type AuthResult = { error?: string };
@@ -51,9 +51,35 @@ export async function signUp(_: AuthResult, form: FormData): Promise<AuthResult>
     },
   });
   if (error?.code === "weak_password") return { error: "Choose a stronger password or a longer passphrase." };
-  if (error?.code === "signup_disabled") return { error: "Account signup is unavailable right now." };
-  if (data.session) await client.auth.signOut({ scope: "local" });
+  if (error?.code === "signup_disabled" || error?.code === "email_provider_disabled") {
+    return { error: "Email signup is unavailable right now. You can continue with Google." };
+  }
+  if (error?.code === "email_address_not_authorized") {
+    return { error: "Confirmation emails are limited during testing. You can create an account with Google." };
+  }
+  if (error?.code === "email_address_invalid") return { error: "Use a different email address." };
+  if (error?.status === 429) return { error: "Too many attempts. Wait a moment and try again." };
+  if (error && error.code !== "email_exists" && error.code !== "user_already_exists") {
+    return { error: "We couldn’t create your account. Please try again." };
+  }
+  if (data.session) redirect("/account");
   redirect("/login?notice=check-email");
+}
+
+export async function completeProfile(_: AuthResult, form: FormData): Promise<AuthResult> {
+  if (!isLive) return unavailable;
+  const client = await supabase();
+  const { data: { user }, error: userError } = await client.auth.getUser();
+  if (userError || !user) redirect("/login");
+  if (!user.email_confirmed_at) redirect("/login?notice=check-email");
+  if (hasCompletedSignupProfile(user.user_metadata)) redirect("/account");
+
+  const profile = readSignupProfile(form);
+  if ("error" in profile) return { error: profile.error };
+
+  const { error } = await client.auth.updateUser({ data: profile.profile });
+  if (error) return { error: "We couldn’t save your profile. Please try again." };
+  redirect("/account");
 }
 
 export async function signInWithGoogle(): Promise<AuthResult> {

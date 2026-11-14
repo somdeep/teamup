@@ -2,7 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { isLive, supabase } from "../../lib/supabase";
+import { isGoogleAvailable } from "../../lib/google-auth";
 import { AuthShell } from "../auth/auth-shell";
+import { GoogleSignIn } from "../auth/google-sign-in";
 import { AccountSignUpForm, SignUpForm } from "./sign-up-form";
 import styles from "./sign-up.module.css";
 
@@ -17,12 +19,14 @@ export default async function SignUpPage() {
     const { data } = await client.auth.getUser();
     if (data.user?.email_confirmed_at) redirect("/account");
   }
+  const googleAvailable = await isGoogleAvailable();
   return (
     <AuthShell
       title="Create Your Profile"
       description={<>Join as a <strong>Teacher</strong> or <strong>Volunteer</strong></>}
     >
       {isLive ? <AccountSignUpForm /> : <SignUpForm />}
+      {googleAvailable && <GoogleSignIn available />}
       <p className={styles.authFooter}>Already have an account? <Link href="/login">Log in</Link></p>
     </AuthShell>
   );

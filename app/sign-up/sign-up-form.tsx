@@ -3,18 +3,18 @@
 import { useActionState, useEffect, useRef, useState, type FormEvent, type Ref } from "react";
 import { ArrowRight, Check, ChevronDown, Flower2, GraduationCap, HeartHandshake, Phone, UserRound } from "lucide-react";
 import { expertiseGroups } from "../../lib/signup-profile";
-import { signUp } from "../auth/actions";
+import { completeProfile, signUp } from "../auth/actions";
 import { EmailField, PasswordField } from "../auth/auth-form";
 import styles from "./sign-up.module.css";
 
 type RoleChoice = "Teacher" | "Volunteer";
 
-function RolePicker({ initialRole = "Volunteer", teacherRef }: { initialRole?: RoleChoice; teacherRef?: Ref<HTMLInputElement> }) {
+function RolePicker({ initialRole, teacherRef }: { initialRole?: RoleChoice; teacherRef?: Ref<HTMLInputElement> }) {
   return (
     <fieldset className={styles.roles}>
       <legend className="sr-only">Choose how you’d like to join</legend>
       <label className={styles.teacher}>
-        <input className="sr-only" name="role" type="radio" value="Teacher" ref={teacherRef} defaultChecked={initialRole === "Teacher"} />
+        <input className="sr-only" name="role" type="radio" value="Teacher" ref={teacherRef} defaultChecked={initialRole === "Teacher"} required />
         <span><UserRound size={23} aria-hidden="true" />Teacher</span>
       </label>
       <label className={styles.volunteer}>
@@ -25,18 +25,22 @@ function RolePicker({ initialRole = "Volunteer", teacherRef }: { initialRole?: R
   );
 }
 
-export function AccountSignUpForm() {
-  const [state, submit, pending] = useActionState(signUp, {});
+export function AccountSignUpForm({ verifiedProfile }: { verifiedProfile?: { name: string; email: string } }) {
+  const [state, submit, pending] = useActionState(verifiedProfile ? completeProfile : signUp, {});
   return (
     <form className={styles.form} action={submit} aria-describedby="account-signup-note">
-      <RolePicker />
-      <ProfileFields />
-      <PasswordField isNew />
-      <p className={styles.fieldHint}>Use at least 12 characters.</p>
-      <p id="account-signup-note" className={styles.fieldHint}>You’ll get a confirmation email. Teacher access requires separate approval.</p>
+      <RolePicker initialRole={verifiedProfile ? undefined : "Volunteer"} />
+      <ProfileFields initialName={verifiedProfile?.name} verifiedEmail={verifiedProfile?.email} />
+      {!verifiedProfile && <>
+        <PasswordField isNew />
+        <p className={styles.fieldHint}>Use at least 12 characters.</p>
+      </>}
+      <p id="account-signup-note" className={styles.fieldHint}>
+        {!verifiedProfile && "You’ll get a confirmation email. "}Teacher access requires separate approval.
+      </p>
       {state.error && <p className={styles.error} role="alert">{state.error}</p>}
       <button className="landing-button primary" disabled={pending}>
-        {pending ? "Creating profile…" : "Create Profile"} <ArrowRight size={22} aria-hidden="true" />
+        {pending ? "Saving profile…" : verifiedProfile ? "Save Profile" : "Create Profile"} <ArrowRight size={22} aria-hidden="true" />
       </button>
     </form>
   );
@@ -106,7 +110,11 @@ export function SignUpForm() {
   );
 }
 
-function ProfileFields({ preview = false }: { preview?: boolean }) {
+function ProfileFields({ preview = false, initialName, verifiedEmail }: {
+  preview?: boolean;
+  initialName?: string;
+  verifiedEmail?: string;
+}) {
   const [selected, setSelected] = useState<string[]>([]);
   return (
     <>
@@ -114,10 +122,10 @@ function ProfileFields({ preview = false }: { preview?: boolean }) {
         <UserRound size={25} aria-hidden="true" />
         <span>
           <span className={styles.fieldName}>Full Name<span aria-hidden="true" className={styles.required}>*</span></span>
-          <input id="fullName" name={preview ? undefined : "fullName"} type="text" autoComplete={preview ? "off" : "name"} required maxLength={100} placeholder="First and last name" onInput={event => event.currentTarget.setCustomValidity("")} />
+          <input id="fullName" name={preview ? undefined : "fullName"} type="text" autoComplete={preview ? "off" : "name"} required maxLength={100} placeholder="First and last name" defaultValue={initialName} onInput={event => event.currentTarget.setCustomValidity("")} />
         </span>
       </label>
-      <EmailField named={!preview} requiredMarker />
+      <EmailField named={!preview} requiredMarker={verifiedEmail === undefined} verifiedEmail={verifiedEmail} />
       <label className={styles.field}>
         <Phone size={25} aria-hidden="true" />
         <span>

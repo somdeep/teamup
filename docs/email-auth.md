@@ -31,7 +31,7 @@ The app supplies a fixed redirect path for each email. A GET renders the form an
 2. Create a **Web application** OAuth client. Use the callback shown in **Supabase → Authentication → Sign In / Providers → Google** as the authorized redirect URI in Google. For the hosted project it has the form `https://<project-ref>.supabase.co/auth/v1/callback`.
 3. In Supabase’s Google provider panel, enter the Google client ID and secret, enable the provider, and save. Keep the secret in Supabase.
 4. Under **Supabase → Authentication → URL Configuration**, allow TeamUp’s exact app callbacks `http://localhost:3000/auth/callback` and `https://teamup-gray.vercel.app/auth/callback`. The hostname used to open **Log In** must match the origin used for the callback so the browser can send the PKCE cookie.
-5. Open TeamUp’s login page and choose **Continue with Google**. The button becomes available after Supabase reports the provider enabled. A successful callback opens `/account`.
+5. Open TeamUp’s login or signup page and choose **Continue with Google**. A signed-in account without a TeamUp profile opens `/complete-profile`. Save the name and signup preference to continue to `/account`. Returning users with saved profiles go directly to `/account`.
 
 Signup fields are self-reported, private Auth metadata for the current account. Teacher access is assigned separately. The course and skill choices come from a fixed list for this signup flow.
 

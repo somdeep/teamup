@@ -13,6 +13,18 @@ export const expertiseGroups = [
 
 const allowedExpertise = new Set(expertiseGroups.flatMap(group => group.options));
 
+function isSignupIntent(value: unknown): value is "Teacher" | "Volunteer" {
+  return value === "Teacher" || value === "Volunteer";
+}
+
+function isProfileName(value: unknown): value is string {
+  return typeof value === "string" && value.trim().length > 0 && value.length <= 100;
+}
+
+export function hasCompletedSignupProfile(metadata: Record<string, unknown>) {
+  return isProfileName(metadata.display_name) && isSignupIntent(metadata.signup_intent);
+}
+
 export function readSignupProfile(form: FormData) {
   const name = readText(form, "fullName").trim();
   const intent = readText(form, "role");
@@ -20,7 +32,7 @@ export function readSignupProfile(form: FormData) {
   const lastCourse = readText(form, "lastCourse").trim();
   const expertise = [...new Set(form.getAll("expertise"))];
 
-  if (!name || name.length > 100 || (intent !== "Teacher" && intent !== "Volunteer")) {
+  if (!isProfileName(name) || !isSignupIntent(intent)) {
     return { error: "Enter a valid name and signup preference." } as const;
   }
   if (phone.length > 32) return { error: "Enter a phone number with at most 32 characters." } as const;

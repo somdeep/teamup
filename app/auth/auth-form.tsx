@@ -7,13 +7,26 @@ import { minimumPasswordLength } from "../../lib/auth-input";
 import styles from "../sign-up/sign-up.module.css";
 import type { AuthResult } from "./actions";
 
-export function EmailField({ named = true, requiredMarker = false } = {}) {
+export function EmailField({ named = true, requiredMarker = false, verifiedEmail }: {
+  named?: boolean;
+  requiredMarker?: boolean;
+  verifiedEmail?: string;
+} = {}) {
   return (
     <label className={styles.field}>
       <Mail size={24} aria-hidden="true" />
       <span>
         <span className={styles.fieldName}>Email{requiredMarker && <span aria-hidden="true" className={styles.required}>*</span>}</span>
-        <input name={named ? "email" : undefined} type="email" autoComplete={named ? "email" : "off"} maxLength={254} placeholder="name@example.com" required />
+        <input
+          name={named && verifiedEmail === undefined ? "email" : undefined}
+          type="email"
+          autoComplete={named ? "email" : "off"}
+          maxLength={254}
+          placeholder="name@example.com"
+          defaultValue={verifiedEmail}
+          readOnly={verifiedEmail !== undefined}
+          required={verifiedEmail === undefined}
+        />
       </span>
     </label>
   );
