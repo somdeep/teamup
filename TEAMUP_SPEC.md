@@ -23,7 +23,7 @@ Help Art of Living organizers find, invite, and coordinate volunteers for seva o
 **Organizer:** Sign in → create event → specify needs → view matching volunteers → invite → see response status.
 
 ## Six screens
-1. Welcome/login and role-aware navigation
+1. [Landing page](docs/landing-page.md), sign-in, and role-aware navigation
 2. Volunteer profile
 3. Weekly availability editor
 4. Event creation form

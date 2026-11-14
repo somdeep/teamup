@@ -1,0 +1,113 @@
+@import "tailwindcss";
+
+:root {
+  color-scheme: light;
+  color: #073d49;
+  background: #fbf6f0;
+  font-family: "DM Sans Variable", system-ui, sans-serif;
+}
+
+.landing {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  min-height: 100svh;
+  padding: clamp(1.5rem, 4vh, 3rem) 1.5rem clamp(5.25rem, 12vh, 8rem);
+  overflow: hidden;
+  background: radial-gradient(ellipse at 50% 55%, #fff 8%, #fdfbf9 62%, #fbf3eb 100%);
+}
+
+.landing-content {
+  width: min(100%, 29rem);
+  text-align: center;
+}
+
+.teamup-logo {
+  display: block;
+  width: min(79vw, clamp(12.75rem, 39vh, 21.25rem));
+  height: auto;
+  margin: 0 auto clamp(.65rem, 2vh, 1.15rem);
+}
+
+.lotus-divider {
+  display: flex;
+  width: min(85%, 22rem);
+  margin-inline: auto;
+  align-items: center;
+  gap: .55rem;
+  color: #d99627;
+}
+
+.lotus-divider span {
+  flex: 1;
+  height: 2px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, transparent, #dc9a2e);
+}
+
+.lotus-divider span:last-child { transform: rotate(180deg); }
+
+.seva-quote {
+  width: min(100%, 23rem);
+  margin: clamp(.8rem, 2vh, 1.15rem) auto;
+  font-family: Georgia, "Times New Roman", serif;
+}
+
+.seva-quote blockquote {
+  font-size: clamp(1.35rem, 5.35vw, 1.75rem);
+  line-height: 1.17;
+  text-wrap: balance;
+}
+
+.seva-quote figcaption {
+  margin-top: .5rem;
+  font-size: clamp(.95rem, 3.8vw, 1.125rem);
+  font-style: italic;
+}
+
+.landing-actions {
+  display: grid;
+  gap: .75rem;
+  margin-top: clamp(1rem, 2.8vh, 1.55rem);
+}
+
+.landing-button {
+  display: flex;
+  min-height: 3.25rem;
+  align-items: center;
+  justify-content: center;
+  gap: .65rem;
+  padding: .4rem 1rem;
+  border: 2px solid transparent;
+  border-radius: 999px;
+  font-size: clamp(1.25rem, 4.6vw, 1.6rem);
+  font-weight: 750;
+  line-height: 1.15;
+}
+
+.landing-button.primary {
+  color: #fff;
+  background: linear-gradient(140deg, #ee6600, #e85a00 50%, #db4300);
+}
+
+.landing-button.secondary {
+  color: #096773;
+  background: #ffffff9c;
+  border-color: #147e87;
+}
+
+#launch-status {
+  color: #41545a;
+  font-size: .875rem;
+  line-height: 1.4;
+}
+
+.landing-waves {
+  position: absolute;
+  z-index: -1;
+  inset: auto 0 0;
+  width: 100%;
+  height: clamp(4.75rem, 12vh, 8rem);
+}
