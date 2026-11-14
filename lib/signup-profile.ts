@@ -3,11 +3,19 @@ import { readText } from "./auth-input";
 export const expertiseGroups = [
   {
     name: "Courses",
-    options: ["Happiness Program", "SKY Breath Meditation", "Sri Sri Yoga", "Sahaj Samadhi Meditation"],
+    options: [
+      "ART Excel", "Art of Living Part 1", "Art of Living Part 2", "Deep Dive Retreat", "Deep Sleep & Anxiety Relief",
+      "DSN", "IP Junior Program", "IP Kids Program", "IP Teens Program", "Sahaj Samadhi Meditation", "Sanyam",
+      "Shakti Kriya", "SKY Happiness Retreat", "Sri Sri Yoga Program", "VTP", "YES!",
+    ],
   },
   {
     name: "Seva skills",
-    options: ["Community Outreach", "Event Setup", "Food Service", "Photography", "Registration", "Teaching"],
+    options: [
+      "Community Outreach", "Decor", "Driving", "Greeting & hospitality", "Kids activities", "Kitchen seva",
+      "Music & bhajans", "Photography", "Registration desk", "Setup & logistics", "Social media", "Teaching",
+      "Tech & AV", "Translation",
+    ],
   },
 ];
 
@@ -21,11 +29,15 @@ function isProfileName(value: unknown): value is string {
   return typeof value === "string" && value.trim().length > 0 && value.length <= 100;
 }
 
-export function hasCompletedSignupProfile(metadata: Record<string, unknown>) {
-  return isProfileName(metadata.display_name) && isSignupIntent(metadata.signup_intent);
-}
+export type SignupProfileInput = {
+  display_name: string;
+  signup_intent: "Teacher" | "Volunteer";
+  contact_phone?: string;
+  last_course?: string;
+  signup_expertise?: string[];
+};
 
-export function readSignupProfile(form: FormData) {
+export function readSignupProfile(form: FormData): { profile: SignupProfileInput } | { error: string } {
   const name = readText(form, "fullName").trim();
   const intent = readText(form, "role");
   const phone = readText(form, "phone").trim();

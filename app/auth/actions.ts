@@ -3,10 +3,11 @@
 import { createClient } from "@supabase/supabase-js";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { accountProfile } from "../../lib/account-profile";
 import { authOrigin, isLive, supabaseKey, supabaseUrl } from "../../lib/auth-config";
 import { newPasswordError, readEmail, readText, validEmailToken } from "../../lib/auth-input";
 import { isGoogleAvailable } from "../../lib/google-auth";
-import { hasCompletedSignupProfile, readSignupProfile } from "../../lib/signup-profile";
+import { readSignupProfile } from "../../lib/signup-profile";
 import { supabase } from "../../lib/supabase";
 
 export type AuthResult = { error?: string };
@@ -47,7 +48,7 @@ export async function signUp(_: AuthResult, form: FormData): Promise<AuthResult>
     password,
     options: {
       emailRedirectTo: origin + "/auth/confirm",
-      data: profile.profile,
+      data: { teamup_pending_profile: profile.profile },
     },
   });
   if (error?.code === "weak_password") return { error: "Choose a stronger password or a longer passphrase." };
@@ -72,13 +73,11 @@ export async function completeProfile(_: AuthResult, form: FormData): Promise<Au
   const { data: { user }, error: userError } = await client.auth.getUser();
   if (userError || !user) redirect("/login");
   if (!user.email_confirmed_at) redirect("/login?notice=check-email");
-  if (hasCompletedSignupProfile(user.user_metadata)) redirect("/account");
-
   const profile = readSignupProfile(form);
   if ("error" in profile) return { error: profile.error };
 
-  const { error } = await client.auth.updateUser({ data: profile.profile });
-  if (error) return { error: "We couldn’t save your profile. Please try again." };
+  const { data, error } = await accountProfile(client, profile.profile);
+  if (error || !data) return { error: "We couldn’t save your profile. Please try again." };
   redirect("/account");
 }
 

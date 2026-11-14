@@ -2,6 +2,8 @@
 
 TeamUp uses Supabase Auth for email and password accounts. Once Supabase is configured, **Get Started** opens account signup and **Log In** opens email login. A verified account opens `/account`. The signup choice of Teacher or Volunteer is stored as a preference only. Profile setup and teacher approval are separate steps.
 
+This flow uses the imported TeamUp schema with `people`, `profiles`, `volunteer_profiles`, and `courses`. Apply the [signup profiles migration](../supabase/migrations/20261114231330_signup_profiles.sql) to that schema before deploying this version. Existing verified accounts with signup details are migrated on their next sign-in.
+
 ## Configure the app
 
 1. Copy [`.env.example`](../.env.example) to the Git-ignored `.env.local`. Set `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` for the project. The Vercel integration’s `NEXT_PUBLIC_SUPABASE_ANON_KEY` also works as a fallback.
@@ -33,6 +35,8 @@ The app supplies a fixed redirect path for each email. A GET renders the form an
 4. Under **Supabase → Authentication → URL Configuration**, allow TeamUp’s exact app callbacks `http://localhost:3000/auth/callback` and `https://teamup-gray.vercel.app/auth/callback`. The hostname used to open **Log In** must match the origin used for the callback so the browser can send the PKCE cookie.
 5. Open TeamUp’s login or signup page and choose **Continue with Google**. A signed-in account without a TeamUp profile opens `/complete-profile`. Save the name and signup preference to continue to `/account`. Returning users with saved profiles go directly to `/account`.
 
-Signup fields are self-reported, private Auth metadata for the current account. Teacher access is assigned separately. The course and skill choices come from a fixed list for this signup flow.
+Supabase Auth manages verification. `public.profiles.id` references the Auth user, and `profiles.person_id` links to the canonical `public.people` record. A verified email with one matching person links to that record. A verified email without a match creates an app person. Profile details and course choices are attached to the account, contact phone and last course go on the linked person, and volunteer skill selections use the same tags as the imported directory. Email signup uses Auth metadata to carry the form through verification.
+
+Signed-in users can read their account profile through RLS. Account linking and signup writes go through an authenticated database function that uses the caller’s verified email. Selecting Teacher records a preference. An administrator assigns organizer access separately.
 
 [Supabase Google sign-in](https://supabase.com/docs/guides/auth/social-sign-in/auth-google)
