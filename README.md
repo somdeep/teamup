@@ -9,13 +9,13 @@ TeamUp helps Art of Living coordinators find and invite volunteers for seva.
 
 [Live landing page](https://teamup-gray.vercel.app)
 
-The current release is the public landing page. Sign-in and onboarding are coming soon.
+The current release includes the landing page, account signup, and email or Google sign-in.
 
 ## Run locally
 
 With Node.js 22.14 or newer, run `npm ci` and `npm run dev`, then open [localhost:3000](http://localhost:3000).
 
-The landing page runs without credentials. For local development that needs credentials, use the Git-ignored `.env.local` file and use [`.env.example`](.env.example) as the template. Store production credentials in Vercel environment variables.
+The landing page runs without credentials. For local development, use [`.env.example`](.env.example) as the template for the Git-ignored `.env.local` file. See [Supabase Auth setup](docs/email-auth.md) for email and Google sign-in.
 
 ## Deploy to Vercel
 

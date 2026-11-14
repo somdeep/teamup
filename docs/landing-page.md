@@ -15,7 +15,7 @@ Use the supplied TeamUp mockup as the visual reference for the public landing pa
 
 | Action | Destination |
 | --- | --- |
-| **Get Started** | Open Google sign-in. After sign-in, guide a new volunteer through city, skills, interests, and availability. |
-| **Log In** | Open the same Google sign-in. After sign-in, take a returning user to their TeamUp workspace using their assigned role. |
+| **Get Started** | Open `/sign-up` ([signup mockup](../mockups/sign-up.jpeg)). With Supabase configured, create an email account and confirm it via email. |
+| **Log In** | Open `/login` for email and password or Google sign-in. A verified account opens the account page. |
 
-Both actions use Google through Supabase Auth. TeamUp assigns the organizer role. Keep the buttons and quote separate from the artwork so they remain readable and accessible on mobile.
+Both methods use Supabase Auth. TeamUp assigns the organizer role. Keep the buttons and quote separate from the artwork so they remain readable and accessible on mobile.

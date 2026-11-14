@@ -98,12 +98,6 @@
   border-color: #147e87;
 }
 
-#launch-status {
-  color: #41545a;
-  font-size: .875rem;
-  line-height: 1.4;
-}
-
 .landing-waves {
   position: absolute;
   z-index: -1;
