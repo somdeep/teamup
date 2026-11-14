@@ -10,14 +10,10 @@ The current release is the public landing page. Sign-in and onboarding are comin
 
 With Node.js 22.14 or newer, run `npm ci` and `npm run dev`, then open [localhost:3000](http://localhost:3000).
 
-Run `npm run lint`, `npm run typecheck`, `npm test`, and `npm run build` before merging changes. The landing page needs no Supabase environment variables.
+The landing page runs without credentials. For local development that needs credentials, use the Git-ignored `.env.local` file and use [`.env.example`](.env.example) as the template. Store production credentials in Vercel environment variables.
 
 ## Deploy to Vercel
 
-The [TeamUp Vercel project](https://vercel.com/team-up15/teamup) is connected to [`somdeep/teamup`](https://github.com/somdeep/teamup). Vercel builds from the repository root with the Next.js preset and runs `npm run build`.
-
-1. Push a feature branch and open a pull request. Review the Vercel preview before merging.
-2. Merge into `main` to trigger a production deployment.
-3. Check [Vercel Deployments](https://vercel.com/team-up15/teamup/deployments) for **Ready**, then open the [live landing page](https://teamup-gray.vercel.app).
-
-[Landing-page design](docs/landing-page.md) · [MVP spec](TEAMUP_SPEC.md)
+1. Run `npm run build` before merging.
+2. Merge the pull request into `main` to trigger the Vercel deployment.
+3. Once Vercel shows **Ready**, open the live landing page linked above.
