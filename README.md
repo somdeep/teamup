@@ -1,6 +1,11 @@
 # TeamUp
 
+<img src="docs/assets/gurudev.jpeg" alt="Illustration of Gurudev Sri Sri Ravi Shankar smiling" width="112" height="101">
+
 TeamUp helps Art of Living coordinators find and invite volunteers for seva.
+
+[![Production site availability](https://img.shields.io/website?url=https%3A%2F%2Fteamup-gray.vercel.app%2F&label=production%20site&up_message=online&down_message=offline&logo=vercel)](https://teamup-gray.vercel.app)
+[![Hosted on Vercel](https://img.shields.io/badge/hosting-Vercel-black)](https://teamup-gray.vercel.app)
 
 [Live landing page](https://teamup-gray.vercel.app)
 
