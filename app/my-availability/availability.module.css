@@ -1,0 +1,61 @@
+.form { gap: 1rem; }
+.general { min-inline-size: 0; }
+.tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(.4rem, 2vw, .75rem); }
+
+.tile {
+  position: relative;
+  display: grid;
+  min-height: clamp(5.85rem, 25vw, 7.9rem);
+  min-inline-size: 0;
+  justify-items: center;
+  align-content: center;
+  gap: .45rem;
+  padding: 1rem .16rem .58rem;
+  border: 1.5px solid #d8dfdd;
+  border-radius: 1.15rem;
+  background: #fff;
+  color: #073d49;
+  font-size: clamp(.81rem, 3.5vw, 1.13rem);
+  font-weight: 800;
+  text-align: center;
+  cursor: pointer;
+}
+
+.badge {
+  position: absolute;
+  top: .48rem;
+  right: .46rem;
+  display: grid;
+  width: 1.15rem;
+  height: 1.15rem;
+  place-items: center;
+  border: 1px solid #789fa2;
+  border-radius: 50%;
+  color: #fff;
+}
+
+.badge svg { visibility: hidden; }
+.calendar { width: clamp(1.7rem, 8vw, 2.45rem); height: auto; color: #08767e; }
+.tile:has(input:checked) { border-color: #b95b06; box-shadow: inset 0 0 0 1px #b95b06; background: #fff4df; }
+.tile:has(input:checked) .badge { border-color: #b94e00; background: #b94e00; }
+.tile:has(input:checked) .badge svg { visibility: visible; }
+.tile:has(input:checked) .calendar { color: #b54a00; }
+.tile:focus-within, .dates summary:focus-visible { outline: 2px solid #005a65; outline-offset: 3px; }
+
+.evenings { display: inline-flex; min-height: 2.75rem; align-items: center; gap: .45rem; margin-top: .2rem; padding-inline: .2rem; font-size: .9rem; font-weight: 700; cursor: pointer; }
+.evenings input { width: 1rem; height: 1rem; accent-color: #08767e; }
+
+.dates { border: 1.5px solid #9fb6b7; border-radius: 1.2rem; background: #fff; color: #073d49; }
+.dates summary { display: flex; min-height: 3.4rem; align-items: center; gap: .6rem; padding: .56rem .85rem; border-radius: inherit; font-weight: 800; cursor: pointer; list-style: none; }
+.dates summary::-webkit-details-marker { display: none; }
+.dates summary svg { flex: none; color: #08767e; }
+.dates summary span { flex: 1; }
+.dates summary small { color: #486168; font-size: .75rem; font-weight: 600; }
+.chevron { transform: rotate(-90deg); }
+.dates[open] .chevron { transform: rotate(180deg); }
+
+.form .emergency { min-height: 4.5rem; border-color: #9acbd0; background: #edfafa; }
+.form .emergency small { display: block; margin-top: .2rem; }
+.form .emergency > svg { color: #b54a00; }
+.form .save { width: 100%; margin-top: .65rem; }
+.unavailable { display: grid; gap: 1rem; text-align: center; }

@@ -1,5 +1,11 @@
 import { readText } from "./auth-input";
 
+export const sevaSkills = [
+  "Community Outreach", "Decor", "Driving", "Greeting & hospitality", "Kids activities", "Kitchen seva",
+  "Music & bhajans", "Photography", "Registration desk", "Setup & logistics", "Social media", "Teaching",
+  "Tech & AV", "Translation",
+] as const;
+
 export const expertiseGroups = [
   {
     name: "Courses",
@@ -11,11 +17,7 @@ export const expertiseGroups = [
   },
   {
     name: "Seva skills",
-    options: [
-      "Community Outreach", "Decor", "Driving", "Greeting & hospitality", "Kids activities", "Kitchen seva",
-      "Music & bhajans", "Photography", "Registration desk", "Setup & logistics", "Social media", "Teaching",
-      "Tech & AV", "Translation",
-    ],
+    options: sevaSkills,
   },
 ];
 

@@ -1,0 +1,74 @@
+.title {
+  font-family: "Instrument Serif", Georgia, serif;
+  font-size: 1.2em;
+  font-weight: 400;
+  letter-spacing: -.035em;
+}
+
+.form { gap: .9rem; }
+
+.skills {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: clamp(.36rem, 2vw, .7rem);
+  min-inline-size: 0;
+  margin-bottom: .25rem;
+}
+
+.tile, .expander {
+  border: 1.5px solid #168f97;
+  border-radius: 1.05rem;
+  background: #fff;
+  color: #073d49;
+}
+
+.tile {
+  position: relative;
+  min-inline-size: 0;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.tileContent {
+  display: grid;
+  min-height: clamp(4.5rem, 22vw, 6.6rem);
+  justify-items: center;
+  align-content: center;
+  gap: .35rem;
+  padding: .4rem .12rem;
+  font-size: clamp(.64rem, 2.7vw, .96rem);
+  font-weight: 800;
+  line-height: 1.12;
+  text-align: center;
+}
+
+.icon { width: clamp(1.4rem, 7.4vw, 2.4rem); height: auto; color: #c14d00; }
+.check { position: absolute; top: .25rem; right: .25rem; visibility: hidden; color: #006b72; }
+.tile:has(input:checked) { border-color: #08767e; box-shadow: inset 0 0 0 1px #08767e; background: #e9f7f7; }
+.tile:has(input:checked) .check { visibility: visible; }
+.tile:focus-within, .expander summary:focus-visible { outline: 2px solid #005a65; outline-offset: 3px; }
+.tile:hover { background: #f1fbfb; }
+
+.expander { border-radius: 1.25rem; }
+.expander summary { display: flex; min-height: 3.1rem; align-items: center; gap: .55rem; padding: .65rem .95rem; font-weight: 800; cursor: pointer; list-style: none; }
+.expander summary::-webkit-details-marker { display: none; }
+.expander summary svg { flex: none; }
+.other { justify-content: center; }
+.other svg { color: #08767e; }
+.learning { font-family: "Instrument Serif", Georgia, serif; font-size: 1.55rem; }
+.learning span { flex: 1; }
+.learning svg:first-child { color: #c14d00; }
+.learning svg:last-child { transform: rotate(-90deg); }
+.expander[open] .learning svg:last-child { transform: rotate(180deg); }
+
+.choices { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .4rem; padding: 0 .72rem .7rem; }
+.choices label { display: flex; min-height: 2.65rem; align-items: center; gap: .4rem; padding: .35rem .5rem; border: 1px solid #8ab6ba; border-radius: .65rem; color: #153b43; font-size: .83rem; cursor: pointer; }
+.choices label:has(input:checked) { border-color: #08767e; background: #e9f7f7; }
+.choices input { width: 1rem; height: 1rem; flex: none; accent-color: #00767a; }
+.form .next { justify-self: center; min-width: min(100%, 10rem); margin-top: .55rem; }
+.unavailable { display: grid; gap: 1rem; text-align: center; }
+
+@media (max-width: 350px) {
+  .skills { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .tileContent { font-size: .85rem; }
+}
