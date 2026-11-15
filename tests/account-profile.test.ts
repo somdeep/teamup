@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { readAccountProfileEdit } from "../lib/account-profile";
+import { needsProfileCompletion, readAccountProfileEdit } from "../lib/account-profile";
 
 function profileForm() {
   const form = new FormData();
@@ -29,4 +29,11 @@ test("requires a location and a supported Canadian time zone", () => {
   const wrongZone = profileForm();
   wrongZone.set("timezone", "America/New_York");
   assert.ok("error" in readAccountProfileEdit(wrongZone));
+});
+
+test("routes first-time OAuth accounts to profile completion", () => {
+  assert.equal(needsProfileCompletion(null), true);
+  assert.equal(needsProfileCompletion({ signup_intent: null }), true);
+  assert.equal(needsProfileCompletion({ signup_intent: "Volunteer" }), false);
+  assert.equal(needsProfileCompletion({ signup_intent: "Teacher" }), false);
 });

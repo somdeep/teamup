@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { accountProfile } from "../../lib/account-profile";
+import { needsProfileCompletion, storedAccountProfile } from "../../lib/account-profile";
 import { isLive, supabase } from "../../lib/supabase";
 import { signOut } from "../auth/actions";
 import { AuthShell } from "../auth/auth-shell";
@@ -16,8 +16,9 @@ export default async function CompleteProfilePage() {
   const { data: { user }, error } = await client.auth.getUser();
   if (error || !user) redirect("/login");
   if (!user.email_confirmed_at) redirect("/login?notice=check-email");
-  const { data: profile, error: profileError } = await accountProfile(client);
-  if (profile || profileError) redirect("/account");
+  const { data: profile, error: profileError } = await storedAccountProfile(client, user.id);
+  if (profileError) throw new Error("Could not check your TeamUp profile.");
+  if (!needsProfileCompletion(profile)) redirect("/account");
 
   const { display_name, full_name, name } = user.user_metadata;
   const defaultName = [display_name, full_name, name].find(

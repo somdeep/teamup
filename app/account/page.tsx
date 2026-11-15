@@ -2,7 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { accountAccess, accountRoleLabels, teacherLanding, volunteerLanding } from "../../lib/account-access";
-import { accountProfile, editableAccountProfile } from "../../lib/account-profile";
+import {
+  accountProfile, editableAccountProfile, needsProfileCompletion, storedAccountProfile,
+} from "../../lib/account-profile";
 import { sevaAvailabilityProfile } from "../../lib/seva-profile";
 import { portalNotifications } from "../../lib/portal-notifications";
 import { isLive, supabase } from "../../lib/supabase";
@@ -20,8 +22,11 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
   const { data, error } = await client.auth.getUser();
   if (error || !data.user) redirect("/login");
   if (!data.user.email_confirmed_at) redirect("/login?notice=check-email");
+  const { data: storedProfile, error: storedProfileError } = await storedAccountProfile(client, data.user.id);
+  if (storedProfileError) throw new Error("Could not check your TeamUp profile.");
+  if (needsProfileCompletion(storedProfile)) redirect("/complete-profile");
   const { data: profile, error: profileError } = await accountProfile(client);
-  if (!profile && !profileError) redirect("/complete-profile");
+  if (profileError) throw new Error("Could not load your TeamUp profile.");
   if (profile) {
     const { data: details } = await sevaAvailabilityProfile(client);
     if (details && !details.complete) redirect("/about-you");

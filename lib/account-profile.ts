@@ -21,6 +21,24 @@ export type EditableAccountProfile = {
   last_course: string | null;
 };
 
+export type StoredAccountProfile = {
+  signup_intent: SignupProfileInput["signup_intent"] | null;
+};
+
+export function needsProfileCompletion(profile: StoredAccountProfile | null) {
+  return !profile?.signup_intent;
+}
+
+export async function storedAccountProfile(
+  client: Awaited<ReturnType<typeof supabase>>, accountId: string,
+) {
+  const { data, error } = await client.from("profiles")
+    .select("signup_intent")
+    .eq("id", accountId)
+    .maybeSingle();
+  return { data: data as StoredAccountProfile | null, error };
+}
+
 export function readAccountProfileEdit(form: FormData): { profile: EditableAccountProfile } | { error: string } {
   const displayName = readText(form, "fullName").trim();
   const phone = readText(form, "phone").trim();
