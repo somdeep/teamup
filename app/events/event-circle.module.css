@@ -22,15 +22,13 @@
 .lotusDivider { display: grid; grid-template-columns: minmax(2rem, 1fr) auto minmax(2rem, 1fr); align-items: center; gap: .7rem; width: min(70%, 24rem); margin: -.1rem auto; color: #eaa000; }
 .lotusDivider span:first-child, .lotusDivider span:last-child { height: 1px; background: #eaa000; }
 .lotusDivider span:nth-child(2) { font-size: 1.4rem; }
-.volunteerCount {
-  display: grid; grid-template-columns: minmax(0, 1fr) auto auto auto; align-items: center; gap: .65rem;
-  min-height: 4.3rem; padding: .65rem .9rem; border: 1px solid #82bec0; border-radius: 1.2rem; background: #fff;
-}
-.volunteerCount > span { display: flex; align-items: center; gap: .35rem; white-space: nowrap; }
-.volunteerCount svg { color: #08767e; }
+.volunteerWrap { position: relative; }
+.volunteerSummary { grid-template-columns: minmax(0, 1fr) auto auto auto !important; }
+.volunteerWrap .collapsible > summary { padding-right: 4.2rem; }
+.confirmed { white-space: nowrap; color: #284f56; }
 .spots { border-radius: 2rem; padding: .45rem .65rem; background: #e5f7dc; color: #2b651c; font-weight: 800; }
 .inviteVolunteers {
-  display: grid; width: 2.9rem; height: 2.9rem; place-items: center; border-radius: 50%;
+  position: absolute; z-index: 1; top: .67rem; right: .7rem; display: grid; width: 2.9rem; height: 2.9rem; place-items: center; border-radius: 50%;
   background: linear-gradient(100deg, #ff9f00, #ef4c17); color: #fff; box-shadow: 0 .2rem .55rem #d7541d3b;
 }
 .inviteVolunteers:hover { background: #d94f13; transform: translateY(-1px); }
@@ -92,9 +90,10 @@ a.relatedRow:hover { background: #edfafa; }
 .messageForm button:hover { background: #dc551a; }
 @media (max-width: 500px) {
   .eventCard { grid-template-columns: 4.7rem minmax(0, 1fr); }
-  .volunteerCount { grid-template-columns: minmax(0, 1fr) auto auto; }
-  .volunteerCount .spots { grid-column: 1 / -1; grid-row: 2; justify-self: stretch; text-align: center; }
-  .inviteVolunteers { grid-column: 3; grid-row: 1; }
+  .volunteerSummary { grid-template-columns: minmax(0, 1fr) auto auto !important; }
+  .volunteerSummary .confirmed { grid-column: 1 / 2; grid-row: 2; }
+  .volunteerSummary .spots { grid-column: 2 / 4; grid-row: 2; justify-self: end; text-align: center; }
+  .volunteerSummary .chevron { grid-column: 3; grid-row: 1; }
   .messageForm > div { grid-template-columns: minmax(0, 1fr); }
   .messageForm button { justify-self: end; }
 }

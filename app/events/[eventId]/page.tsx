@@ -50,6 +50,15 @@ export default async function EventCirclePage({
     const { data } = await session.client.rpc("teamup_teacher_events", { p_event_id: event.id });
     invitations = ((data ?? [])[0] as PortalEvent | undefined)?.invitations ?? [];
   }
+  const invitationEvent: PortalEvent = {
+    ...event,
+    required_skills: [],
+    invitations,
+    roles: [],
+    parent_title: event.parent_event_title,
+    child_count: event.related_events.length,
+  };
+  const confirmedInvitations = invitations.filter(invitation => invitation.status === "accepted");
   const spotsLeft = Math.max(0, event.volunteers_needed - event.confirmed_count);
   const backHref = event.can_manage ? "/teacher?view=events" : "/invitations";
 
@@ -84,15 +93,29 @@ export default async function EventCirclePage({
 
       <div className={styles.lotusDivider} aria-hidden="true"><span /><span>✦</span><span /></div>
 
-      <section className={styles.volunteerCount} aria-label="Volunteer count">
-        <span><UsersRound aria-hidden="true" /><strong>Volunteers</strong></span>
-        <span><strong>{event.confirmed_count}</strong> Confirmed</span>
-        <span className={styles.spots}>{spotsLeft} {spotsLeft === 1 ? "Spot" : "Spots"} Left</span>
+      <div className={styles.volunteerWrap}>
+        <details className={styles.collapsible} id="volunteers">
+          <summary className={styles.volunteerSummary}>
+            <span><UsersRound aria-hidden="true" /><strong>Volunteers</strong></span>
+            <span className={styles.confirmed}><strong>{event.confirmed_count}</strong> Confirmed</span>
+            <span className={styles.spots}>{spotsLeft} {spotsLeft === 1 ? "Spot" : "Spots"} Left</span>
+            <ChevronDown className={styles.chevron} aria-hidden="true" />
+          </summary>
+          <div className={styles.collapsibleContent}>
+            {event.can_manage
+              ? confirmedInvitations.length
+                ? <InvitationList requests={confirmedInvitations.map(invite => ({ event: invitationEvent, invite }))} />
+                : <p className={styles.emptyRelated}>No volunteers are confirmed yet.</p>
+              : <p className={styles.emptyRelated}>{event.confirmed_count
+                ? `${event.confirmed_count} ${event.confirmed_count === 1 ? "volunteer is" : "volunteers are"} confirmed for this event.`
+                : "No volunteers are confirmed yet."}</p>}
+          </div>
+        </details>
         {event.can_manage && <Link className={styles.inviteVolunteers} href={`/teacher?view=find&forEvent=${event.id}`}
           aria-label={`Invite volunteers to ${event.title}`} title="Invite volunteers">
           <Plus aria-hidden="true" />
         </Link>}
-      </section>
+      </div>
 
       {!event.parent_event_id && (event.can_manage || event.related_events.length > 0) && <div className={styles.relatedWrap}>
         <details className={styles.collapsible}>
@@ -124,9 +147,7 @@ export default async function EventCirclePage({
           <ChevronDown className={styles.chevron} aria-hidden="true" />
         </summary>
         <div className={styles.collapsibleContent}>
-          <InvitationList requests={invitations.map(invite => ({ event: {
-            ...event, required_skills: [], invitations, roles: [], parent_title: event.parent_event_title, child_count: event.related_events.length,
-          }, invite }))} />
+          <InvitationList requests={invitations.map(invite => ({ event: invitationEvent, invite }))} />
         </div>
       </details>}
 
