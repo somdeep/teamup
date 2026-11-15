@@ -62,20 +62,6 @@ export function readEventResourceMetadata(form: FormData) {
   return { path, fileName: fileName.trim(), mimeType, fileSize } as const;
 }
 
-export async function uploadEventResource(
-  client: SupabaseClient, accountId: string, eventId: string,
-  resource: Exclude<ReturnType<typeof readEventResource>, { error: string }> & { file: File },
-) {
-  const path = `${eventId}/${accountId}/${crypto.randomUUID()}.${resource.extension}`;
-  const { error } = await client.storage.from("event-resources").upload(path, await resource.file.arrayBuffer(), {
-    contentType: resource.file.type, cacheControl: "3600", upsert: false,
-  });
-  if (error) return { error: "We couldn’t upload the event resource." } as const;
-  return {
-    path, fileName: resource.fileName, mimeType: resource.file.type, fileSize: resource.file.size,
-  } as const;
-}
-
 async function withSignedUrl<T extends { storage_path: string | null }>(client: SupabaseClient, resource: T) {
   if (!resource.storage_path) return { ...resource, url: null };
   const { data } = await client.storage.from("event-resources").createSignedUrl(resource.storage_path, 60 * 60);

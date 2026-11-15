@@ -2,16 +2,15 @@
 
 import { redirect } from "next/navigation";
 import { teacherSession } from "../../lib/portal-access";
-import { readEventResource, uploadEventResource } from "../../lib/event-resources";
 import { isUuid, readTeacherEvent } from "../../lib/teacher-event";
 import type { AuthResult } from "../auth/actions";
 
-export async function createTeacherEvent(_: AuthResult, form: FormData): Promise<AuthResult> {
+export type CreateTeacherEventResult = AuthResult & { eventId?: string };
+
+export async function createTeacherEvent(_: CreateTeacherEventResult, form: FormData): Promise<CreateTeacherEventResult> {
   const { client, user, profile } = await teacherSession();
   const input = readTeacherEvent(form);
   if ("error" in input) return { error: input.error };
-  const resource = readEventResource(form.get("resource"));
-  if ("error" in resource) return { error: resource.error };
   const suppliedParent = form.get("parentEventId");
   let parentEventId: string | null = null;
   if (suppliedParent) {
@@ -36,25 +35,7 @@ export async function createTeacherEvent(_: AuthResult, form: FormData): Promise
       .eq("id", input.event.id).eq("organizer_user_id", user.id).maybeSingle();
     if (!existing) return { error: "Refresh the event form and try again." };
   }
-  if (resource.file) {
-    const uploaded = await uploadEventResource(client, user.id, input.event.id, resource);
-    if ("error" in uploaded) return { error: `${uploaded.error} The event was created; reopen it to try the attachment again.` };
-    const { data: oldPath, error: resourceError } = await client.rpc("teamup_set_event_resource", {
-      p_event_id: input.event.id,
-      p_storage_path: uploaded.path,
-      p_file_name: uploaded.fileName,
-      p_mime_type: uploaded.mimeType,
-      p_file_size: uploaded.fileSize,
-    });
-    if (resourceError) {
-      await client.storage.from("event-resources").remove([uploaded.path]);
-      return { error: "The event was created, but its attachment could not be saved. Open the event to try again." };
-    }
-    if (typeof oldPath === "string" && oldPath && oldPath !== uploaded.path) {
-      await client.storage.from("event-resources").remove([oldPath]);
-    }
-  }
-  redirect(`/events/${input.event.id}?notice=created`);
+  return { eventId: input.event.id };
 }
 
 export async function inviteVolunteer(form: FormData) {

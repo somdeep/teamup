@@ -10,10 +10,8 @@ const messageImageTypes = new Map([
 ]);
 
 async function teacherCanChangeEvent(client: Awaited<ReturnType<typeof teacherSession>>["client"], eventId: string) {
-  const { data, error } = await client.rpc("teamup_teacher_events", { p_event_id: eventId });
-  const event = (data ?? [])[0] as { can_manage?: boolean; status?: string; ends_at?: string | null } | undefined;
-  return !error && !!event?.can_manage && event.status === "scheduled"
-    && !!event.ends_at && Date.parse(event.ends_at) > Date.now();
+  const { data, error } = await client.rpc("can_change_event", { p_event_id: eventId });
+  return !error && data === true;
 }
 
 export async function prepareEventMessageImageUpload(form: FormData) {

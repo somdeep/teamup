@@ -1,19 +1,82 @@
 "use client";
 
-import { useActionState } from "react";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { ArrowRight } from "lucide-react";
+import { readEventResource } from "../../lib/event-resources";
+import { supabaseBrowser } from "../../lib/supabase-browser";
 import { sevaSkills } from "../../lib/signup-profile";
 import { eventTimeZones } from "../../lib/teacher-event";
 import auth from "../sign-up/sign-up.module.css";
+import { prepareEventResourceUpload, setEventResource } from "../events/actions";
 import { createTeacherEvent } from "./actions";
 import styles from "./teacher.module.css";
 
 type ParentEvent = { id: string; title: string; city: string | null; venue_name: string | null; timezone: string };
 
 export function TeacherEventForm({ id, priority, parent }: { id: string; priority: boolean; parent?: ParentEvent }) {
-  const [state, save, pending] = useActionState(createTeacherEvent, {});
+  const router = useRouter();
+  const [error, setError] = useState("");
+  const [pending, setPending] = useState(false);
+
+  async function submit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setError("");
+    setPending(true);
+    const form = new FormData(event.currentTarget);
+    const resource = readEventResource(form.get("resource"));
+    if ("error" in resource) {
+      setError(resource.error ?? "Choose a PDF, image, text or Word document no larger than 10 MB.");
+      setPending(false);
+      return;
+    }
+    form.delete("resource");
+
+    try {
+      const created = await createTeacherEvent({}, form);
+      if (created.error || !created.eventId) {
+        setError(created.error ?? "We couldn’t create the event. Try again.");
+        return;
+      }
+      if (!resource.file) {
+        router.push(`/events/${created.eventId}?notice=created`);
+        return;
+      }
+
+      const request = new FormData();
+      request.set("eventId", created.eventId);
+      request.set("mimeType", resource.file.type);
+      request.set("fileSize", String(resource.file.size));
+      const prepared = await prepareEventResourceUpload(request);
+      if ("error" in prepared) {
+        router.push(`/events/${created.eventId}?notice=resource-failed#event-resource`);
+        return;
+      }
+
+      const client = supabaseBrowser();
+      const { error: uploadError } = await client.storage.from("event-resources")
+        .uploadToSignedUrl(prepared.path, prepared.token, resource.file, {
+          contentType: resource.file.type, cacheControl: "3600",
+        });
+      if (uploadError) {
+        router.push(`/events/${created.eventId}?notice=resource-failed#event-resource`);
+        return;
+      }
+
+      const metadata = new FormData();
+      metadata.set("eventId", created.eventId);
+      metadata.set("resourcePath", prepared.path);
+      metadata.set("resourceName", resource.fileName);
+      metadata.set("resourceMime", resource.file.type);
+      metadata.set("resourceSize", String(resource.file.size));
+      await setEventResource(metadata);
+    } finally {
+      setPending(false);
+    }
+  }
+
   return (
-    <form action={save} className={styles.stack}>
+    <form onSubmit={submit} className={styles.stack}>
       <input type="hidden" name="eventId" value={id} />
       {parent && <input type="hidden" name="parentEventId" value={parent.id} />}
       {priority && <input type="hidden" name="priority" value="on" />}
@@ -44,7 +107,7 @@ export function TeacherEventForm({ id, priority, parent }: { id: string; priorit
         accept="application/pdf,image/jpeg,image/png,image/webp,text/plain,.doc,.docx" />
         <small>One PDF, image, text or Word document · up to 10 MB</small>
       </label>
-      {state.error && <p className={auth.error} role="alert">{state.error}</p>}
+      {error && <p className={auth.error} role="alert">{error}</p>}
       <button className="landing-button primary" disabled={pending}>
         {pending ? "Creating…" : parent ? "Create Related Seva" : priority ? "Create Priority Event" : "Create Event or Course"}<ArrowRight aria-hidden="true" size={21} />
       </button>
