@@ -30,7 +30,7 @@ Allow a seva event or impact campaign to link to an official Facebook fundraiser
 
 ### Calling seva
 
-Represent calling seva as a campaign or event with a purpose, schedule, coordinator, required number of callers, and optional script or talking points. Let volunteers accept calling shifts and record completed time or outcomes without exposing private contact lists in general event details. Add consent, access controls, audit history, and data-retention rules before importing phone lists or call results.
+Represent calling seva as a campaign or event with a purpose, schedule, coordinator, required number of callers, and optional script or talking points. Let volunteers accept calling shifts and record completed time or outcomes without exposing private contact lists in general event details. Add consent, access controls, audit history, and data-retention rules before importing phone lists or call results. This is now done.
 
 ### Courses as events
 
