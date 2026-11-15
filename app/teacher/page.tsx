@@ -4,7 +4,7 @@ import Link from "next/link";
 import { CalendarDays, MapPin, UsersRound } from "lucide-react";
 import { portalSession } from "../../lib/portal-access";
 import { sevaAvailabilityProfile } from "../../lib/seva-profile";
-import { eventRoles, teacherDirectory, teacherEvents, teacherMatches, teacherVolunteer } from "../../lib/teacher-data";
+import { eventRoles, teacherDirectory, teacherEvents, teacherMatches, teacherVolunteer, teacherVolunteerPhone } from "../../lib/teacher-data";
 import { formatEventTime, isOpenEvent, isUuid } from "../../lib/teacher-event";
 import { readDirectoryFilter, volunteerDirectoryHref } from "../../lib/volunteer-directory";
 import { AuthShell } from "../auth/auth-shell";
@@ -106,9 +106,10 @@ export default async function TeacherPage({ searchParams }: { searchParams: Prom
     const personId = read("person");
     if (personId) {
       const volunteer = isUuid(personId) ? await teacherVolunteer(session, personId) : null;
+      const phone = volunteer ? await teacherVolunteerPhone(session, personId) : null;
       return <AuthShell wide title={volunteer?.full_name ?? "Profile unavailable"}
         backHref={volunteerDirectoryHref(filter)} backLabel="Back to Find Volunteers" headerActions={headerActions}>
-        {volunteer ? <VolunteerDirectoryDetails volunteer={volunteer} event={forEvent} />
+        {volunteer ? <VolunteerDirectoryDetails volunteer={volunteer} event={forEvent} phone={phone} />
           : <p className={styles.empty}>This volunteer profile is unavailable.</p>}
       </AuthShell>;
     }

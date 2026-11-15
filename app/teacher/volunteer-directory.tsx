@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import {
-  Bell, CalendarDays, Camera, Car, ChefHat, ChevronRight, ClipboardCheck, HeartHandshake,
+  Bell, CalendarDays, Camera, Car, ChefHat, ChevronRight, ClipboardCheck, HeartHandshake, Phone,
   Laptop, MapPin, Megaphone, Music2, Palette, UserPlus, UserRound, UsersRound, Wrench,
   type LucideIcon,
 } from "lucide-react";
@@ -59,15 +59,15 @@ function SkillList({ skills }: { skills: string[] }) {
   </ul>;
 }
 
-function InviteButton({ volunteer, event }: { volunteer: VolunteerDirectoryProfile; event?: PortalEvent }) {
+function InviteButton({ volunteer, event, request = false }: { volunteer: VolunteerDirectoryProfile; event?: PortalEvent; request?: boolean }) {
   if (!event) return null;
   const invitation = event.invitations.find(item => item.person_id === volunteer.person_id);
-  if (invitation) return <span className={styles.inviteStatus}>Invitation {invitation.status}</span>;
+  if (invitation) return <span className={styles.inviteStatus}>{request ? "Request" : "Invitation"} {invitation.status}</span>;
   return <form action={inviteVolunteer}>
     <input type="hidden" name="eventId" value={event.id} />
     <input type="hidden" name="personId" value={volunteer.person_id} />
-    <button className={styles.invite} aria-label={`Invite ${volunteer.full_name}`}>
-      <UserPlus size={17} aria-hidden="true" /> Invite
+    <button className={styles.invite} aria-label={`${request ? "Send event request to" : "Invite"} ${volunteer.full_name}`}>
+      <UserPlus size={17} aria-hidden="true" /> {request ? "Send Request" : "Invite"}
     </button>
   </form>;
 }
@@ -113,7 +113,8 @@ export function VolunteerDirectory({ filter, events, event, volunteers, hasNext 
   </div>;
 }
 
-export function VolunteerDirectoryDetails({ volunteer, event }: { volunteer: VolunteerDirectoryProfile; event?: PortalEvent }) {
+export function VolunteerDirectoryDetails({ volunteer, event, phone }: { volunteer: VolunteerDirectoryProfile; event?: PortalEvent; phone: string | null }) {
+  const phoneHref = phone?.replace(/[^\d+*#;,]/g, "");
   return <section className={styles.details} aria-label="Volunteer details">
     <div className={styles.detailsIntro}>
       <Avatar volunteer={volunteer} large />
@@ -132,8 +133,14 @@ export function VolunteerDirectoryDetails({ volunteer, event }: { volunteer: Vol
       <h2>Interested in learning</h2>
       <p>{volunteer.interests.join(" · ")}</p>
     </div>}
-    {event && <div className={styles.context}><p><CalendarDays size={17} aria-hidden="true" /> {event.title}</p>
-      <InviteButton volunteer={volunteer} event={event} />
-    </div>}
+    <div className={styles.detailsActions}>
+      {event && <div className={styles.eventContext}>
+        <p><CalendarDays size={17} aria-hidden="true" /> Request to volunteer for <strong>{event.title}</strong></p>
+        <InviteButton volunteer={volunteer} event={event} request />
+      </div>}
+      {phoneHref && <a className={styles.callButton} href={`tel:${phoneHref}`} aria-label={`Call ${volunteer.full_name}`}>
+        <Phone size={19} aria-hidden="true" /> Call
+      </a>}
+    </div>
   </section>;
 }

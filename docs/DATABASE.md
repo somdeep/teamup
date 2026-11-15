@@ -42,7 +42,7 @@ The folder also had a sheet pointing to Art of Living's live course API. The she
 | `invitations` | Who's been invited to what, and their answer | Filled by teachers coordinating an event |
 | `courses` | Course names for the sign-up form | 16 |
 
-For search, teachers use `volunteer_directory` to find volunteers by name, skill, learning interest, city, and general availability. After the [directory migration](../supabase/migrations/20261115033807_volunteer_directory_filters.sql), approved teachers can also view photos uploaded by people in the directory. The directory search keeps contact details out of its results. For a specific event, `match_volunteers` checks the event time and returns the best-fit volunteers with short reasons.
+For search, teachers use `volunteer_directory` to find volunteers by name, skill, learning interest, city, and general availability. After the [directory migration](../supabase/migrations/20261115033807_volunteer_directory_filters.sql), approved teachers can also view photos uploaded by people in the directory. The directory search keeps contact details out of its results. Opening a volunteer profile can retrieve that volunteer's phone through the Teacher-only [contact RPC](../supabase/migrations/20261115033900_volunteer_profile_contact.sql), which the app presents as a `tel:` link so the device can open its default calling app. For a specific event, `match_volunteers` checks the event time and returns the best-fit volunteers with short reasons.
 
 The ranking is simple and rule-based. A volunteer has to be free at the event's time, and then skills count for 50%, availability for 35%, and living in the same city for 15%.
 
@@ -70,7 +70,7 @@ Every table has Row Level Security turned on. These are rules inside the databas
 | Other volunteers | Can't see | Can search, without emails or phones |
 | Events | See all | See all; create events and edit the events they coordinate |
 | Invitations | See their own; accept or decline | Send and see responses for events they coordinate |
-| Contact details | Only their own | Only for people they've invited |
+| Contact details | Only their own | Volunteer phone numbers on directory profiles; other event contacts only for people they've invited |
 
 The database controls account role assignments and prevents duplicate invitations for the same event and volunteer.
 

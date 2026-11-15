@@ -55,6 +55,12 @@ export async function teacherVolunteer({ client, profile }: TeacherSession, pers
   return data as VolunteerDirectoryProfile | null;
 }
 
+export async function teacherVolunteerPhone({ client }: TeacherSession, personId: string) {
+  const { data, error } = await client.rpc("teamup_volunteer_phone", { p_person_id: personId });
+  if (error) throw new Error("Could not load the volunteer contact option.");
+  return typeof data === "string" && data.trim() ? data.trim() : null;
+}
+
 export async function teacherMatches({ client }: TeacherSession, eventId: string) {
   const { data, error } = await client.rpc("match_volunteers", { p_event_id: eventId, p_limit: 24 });
   if (error) throw new Error("Could not load volunteer matches.");
