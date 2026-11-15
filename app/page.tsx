@@ -1,6 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { ArrowRight } from "lucide-react";
+import { isLive, supabase } from "../lib/supabase";
 import { BrandWaves } from "./brand-waves";
 
 function LotusDivider() {
@@ -17,7 +19,13 @@ function LotusDivider() {
   );
 }
 
-export default function Home() {
+export default async function Home() {
+  if (isLive) {
+    const client = await supabase();
+    const { data } = await client.auth.getUser();
+    if (data.user?.email_confirmed_at) redirect("/account");
+  }
+
   return (
     <main className="landing">
       <div className="landing-content">
