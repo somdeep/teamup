@@ -10,7 +10,7 @@ import styles from "../sign-up/sign-up.module.css";
 
 export const metadata: Metadata = { title: "Your Account | TeamUp", robots: { index: false } };
 
-export default async function AccountPage({ searchParams }: { searchParams: Promise<{ notice?: string }> }) {
+export default async function AccountPage({ searchParams }: { searchParams: Promise<{ notice?: string; view?: string }> }) {
   if (!isLive) redirect("/login");
   const client = await supabase();
   const { data, error } = await client.auth.getUser();
@@ -25,7 +25,9 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
     if (details && !details.availability_reviewed) redirect("/my-availability");
   }
 
-  const { notice } = await searchParams;
+  const { notice, view } = await searchParams;
+  const { data: organizer } = profile ? await client.rpc("is_organizer") : { data: false };
+  if (organizer === true && view !== "settings" && !notice) redirect("/teacher");
   return (
     <AuthShell title="Your Account">
       <section className={styles.confirmation} aria-label="Account details">
@@ -42,6 +44,9 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
         {notice === "seva-saved" && <p role="status">Your seva preferences were saved.</p>}
         {notice === "skills-saved" && <p role="status">Your skills and learning interests were saved.</p>}
         {notice === "availability-saved" && <p role="status">Your profile was saved.</p>}
+        {notice === "teacher-access" && <p role="status">The Teacher Portal is available to approved organizers.</p>}
+        {organizer === true && <Link className="landing-button primary" href="/teacher">Teacher Portal</Link>}
+        {profile && <Link className="landing-button secondary" href="/invitations">Invitations</Link>}
         {profile && <Link className="landing-button secondary" href="/about-you">Edit Seva Preferences</Link>}
         {profile && <Link className="landing-button secondary" href="/my-skills">Edit My Skills</Link>}
         {profile && <Link className="landing-button secondary" href="/my-availability">Edit Availability</Link>}

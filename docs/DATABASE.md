@@ -71,7 +71,11 @@ Every table has Row Level Security turned on. These are rules inside the databas
 | Invitations | See their own; accept or decline | Send for their events; see responses |
 | Contact details | Only their own | Only for people they've invited |
 
-There are a few extra safeguards on top. Only someone whose email matches a teacher record can sign up as an organizer, nobody can change their own role later, and the database won't let anyone be invited to the same event twice.
+An administrator grants organizer access on a verified account. The Teacher choice at signup records a preference. The database prevents users from changing their own role and prevents duplicate invitations for the same event and volunteer.
+
+## Teacher Portal
+
+Apply the [Teacher Portal migration](../supabase/migrations/20261115005932_teacher_portal.sql) after the onboarding migrations. The portal uses owned events, the organizer directory, and in-app invitations. Matching checks whether a volunteer’s scheduled slots cover the full event across both time zones. Priority events rank volunteers open to Emergency Seva first among available matches. Volunteers accept or decline from **Your Account → Invitations**.
 
 ## Keys and the seed script
 
@@ -79,7 +83,7 @@ The seed script is the one thing allowed past these rules, because it uses the s
 
 ## Rebuilding it
 
-To set it up in any Supabase project, put the project's URL and keys in `.env.local`, paste `db/schema.sql` into the SQL Editor and run it, then run `npm run seed`. It takes a few minutes, and you should end up with 10,368 people, 903 events, and 16 courses. Running the seed again only replaces the mock data, so anyone who signed up through the app is left alone.
+To set it up in a fresh Supabase project, put the project's URL and keys in `.env.local`, run `db/schema.sql` in the SQL Editor, apply the files in [`supabase/migrations`](../supabase/migrations) in filename order, then run `npm run seed`. It takes a few minutes, and you should end up with 10,368 people, 903 events, and 16 courses. Seed refreshes replace mock records, including any schedules or invitations attached to those records.
 
 ## Things that tripped us up
 

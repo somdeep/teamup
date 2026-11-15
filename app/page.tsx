@@ -22,16 +22,17 @@ export default function Home() {
     <main className="landing">
       <div className="landing-content">
         <h1>
-          <Image
-            className="teamup-logo"
-            src="/teamup-logo.webp"
-            alt="TeamUp"
-            width={720}
-            height={720}
-            sizes="(max-width: 440px) 80vw, 340px"
-            unoptimized
-            preload
-          />
+          <Link className="teamup-logo" href="/" aria-label="TeamUp home" aria-current="page">
+            <Image
+              src="/teamup-logo.webp"
+              alt="TeamUp"
+              width={720}
+              height={720}
+              sizes="(max-width: 440px) 80vw, 340px"
+              unoptimized
+              preload
+            />
+          </Link>
         </h1>
         <LotusDivider />
         <figure className="seva-quote">

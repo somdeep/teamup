@@ -1,0 +1,54 @@
+.stack { display: grid; gap: .85rem; min-inline-size: 0; }
+.stack h2 { font-size: clamp(1.3rem, 4.9vw, 1.75rem); font-weight: 800; line-height: 1.15; }
+.tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(.4rem, 2vw, .9rem); }
+.tile {
+  position: relative; display: grid; align-content: center; justify-items: center; gap: .55rem;
+  min-height: clamp(6rem, 26vw, 9rem); min-inline-size: 0; padding: .7rem .25rem;
+  border: 2px solid #148990; border-radius: 1.2rem; background: #fff;
+  font-size: clamp(.86rem, 3.8vw, 1.3rem); font-weight: 800; line-height: 1.1; text-align: center;
+}
+.tile > svg { color: #b34b00; }
+.tile:hover, .eventRow:hover { background: #edfafa; }
+.tile.priority { border-color: #ac3d00; background: linear-gradient(145deg,#c75900,#ac3900); color: #fff; }
+.tile.priority:hover { background: #a03800; }
+.tile.priority > svg { color: #fff; }
+.tile:focus-visible, .eventRow:focus-visible, .smallButton:focus-visible, .textLink:focus-visible {
+  outline: 2px solid #005a65; outline-offset: 3px;
+}
+.badge { position: absolute; inset: .33rem .33rem auto auto; border-radius: 1rem; padding: .2rem .4rem; background: #ae4600; color: #fff; font-size: .73rem; }
+.eventRow, .reply, .volunteer, .eventInfo {
+  border: 1.5px solid #168f97; border-radius: 1rem; padding: .7rem .85rem; background: #fff;
+}
+.eventRow, .reply, .volunteer { display: flex; align-items: center; gap: .7rem; }
+.eventRow > span, .reply > span:first-child, .volunteer > div { min-inline-size: 0; flex: 1; overflow-wrap: anywhere; }
+.eventRow > svg:first-child { color: #b34b00; }
+.eventRow svg, .eventInfo p svg, .volunteer p svg { flex: none; }
+.eventRow strong, .reply strong, .volunteer h3 { font-weight: 800; }
+.eventRow small, .reply small, .volunteer small { display: block; color: #486168; font-size: .86rem; }
+.volunteer p, .eventInfo p { display: flex; align-items: flex-start; gap: .42rem; font-size: .92rem; }
+.volunteer p svg, .eventInfo p svg { color: #08767e; }
+.reason { margin-top: .35rem; color: #366066; }
+.eventInfo { display: grid; gap: .5rem; }
+.textLink { display: inline-flex; align-items: center; gap: .25rem; color: #006b72; font-weight: 800; text-decoration: underline; }
+.sectionHeader { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .55rem; }
+.empty, .notice { padding: .85rem 1rem; border-radius: .8rem; color: #2b5259; background: #eef8f7; }
+.empty .textLink { margin-top: .3rem; }
+.status { display: inline-flex; border-radius: 1rem; padding: .28rem .55rem; background: #fff1d5; color: #714300; font-size: .8rem; font-weight: 800; text-transform: capitalize; }
+.status[data-status="accepted"] { color: #176442; background: #e2f6e8; }
+.status[data-status="declined"] { color: #92350a; background: #fff1e9; }
+.smallButton { border: 1.5px solid #08767e; border-radius: 1.1rem; padding: .42rem .72rem; background: #effafa; color: #00565e; font-weight: 800; cursor: pointer; }
+.tags { display: flex; flex-wrap: wrap; gap: .25rem; margin: .35rem 0; }
+.tags li { border-radius: .85rem; background: #eaf7f7; padding: .24rem .45rem; color: #214d53; font-size: .76rem; }
+.field { display: grid; min-inline-size: 0; gap: .28rem; color: #073d49; font-weight: 700; }
+.field input, .field select, .field textarea { width: 100%; min-inline-size: 0; min-height: 2.8rem; border: 1.5px solid #168f97; border-radius: .8rem; background: #fff; padding: .45rem .6rem; font-weight: 500; }
+.two { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: .55rem; }
+.skills { display: flex; flex-wrap: wrap; gap: .4rem; min-inline-size: 0; }
+.skills legend { margin-bottom: .35rem; font-weight: 800; }
+.skills label { display: flex; align-items: center; gap: .3rem; min-height: 2.35rem; border: 1px solid #87b5b7; border-radius: 1rem; background: #fff; padding: .25rem .5rem; font-size: .83rem; }
+.skills input { accent-color: #08767e; }
+.stack button { cursor: pointer; }
+form.stack > button { justify-self: start; min-width: min(100%, 13rem); }
+.responseForm { display: flex; flex-wrap: wrap; gap: .4rem; }
+@media (max-width: 410px) {
+  .two { grid-template-columns: minmax(0, 1fr); }
+}

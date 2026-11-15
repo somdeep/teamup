@@ -9,7 +9,7 @@ TeamUp helps Art of Living coordinators find and invite volunteers for seva.
 
 [Live landing page](https://teamup-gray.vercel.app)
 
-The current release includes email and Google sign-in, account setup, and onboarding for seva preferences, skills, and availability.
+The current release includes email and Google sign-in, volunteer onboarding, and a Teacher Portal for approved organizers to create events and coordinate invitations.
 
 ## Run locally
 

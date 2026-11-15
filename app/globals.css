@@ -27,9 +27,11 @@
 .teamup-logo {
   display: block;
   width: min(79vw, clamp(12.75rem, 39vh, 21.25rem));
-  height: auto;
   margin: 0 auto clamp(.65rem, 2vh, 1.15rem);
 }
+
+.teamup-logo img { display: block; width: 100%; height: auto; }
+.teamup-logo:focus-visible { outline: 2px solid #005a65; outline-offset: 4px; }
 
 .lotus-divider {
   display: flex;

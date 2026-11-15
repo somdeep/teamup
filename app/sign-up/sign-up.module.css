@@ -20,6 +20,8 @@
   width: min(100%, 31rem);
 }
 
+.wideContent { width: min(100%, 48rem); }
+
 .header {
   position: relative;
   margin-bottom: clamp(1.35rem, 3vh, 1.9rem);
@@ -45,6 +47,8 @@
   gap: .2rem;
   margin: 0 auto .85rem;
 }
+
+.brand:focus-visible { outline: 2px solid #005a65; outline-offset: 4px; }
 
 .brandMark,
 .wordmark {
