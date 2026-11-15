@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { sevaProfile } from "../../lib/seva-profile";
 import { isLive, supabase } from "../../lib/supabase";
 import { AuthShell } from "../auth/auth-shell";
+import { PortalHeaderActions } from "../auth/portal-header-actions";
 import { OnboardingProgress } from "../auth/onboarding-progress";
 import { AboutYouForm } from "./about-you-form";
 import styles from "./about-you.module.css";
@@ -25,6 +26,7 @@ export default async function AboutYouPage() {
       title="Tell Us About Yourself"
       description="Help us match you with the right opportunities."
       beforeTitle={profile && !profile.complete && <OnboardingProgress step={3} />}
+      headerActions={<PortalHeaderActions />}
     >
       {profile ? <AboutYouForm profile={profile} /> : (
         <div className={styles.unavailable}>

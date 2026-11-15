@@ -17,11 +17,15 @@ test("pending teacher requests and other roles have distinct destinations", () =
   assert.equal(teacherLanding({ role: "teacher", teacher_request: null }, undefined, "signout-failed"), null);
 });
 
-test("Member is a valid profile choice while organizer is unavailable at signup", () => {
+test("V1 signup accepts Teacher and Volunteer but hides Member and organizer", () => {
   const form = new FormData();
   form.set("fullName", "Someone New");
+  form.set("role", "Teacher");
+  assert.deepEqual(readSignupProfile(form), { profile: { display_name: "Someone New", signup_intent: "Teacher" } });
+  form.set("role", "Volunteer");
+  assert.deepEqual(readSignupProfile(form), { profile: { display_name: "Someone New", signup_intent: "Volunteer" } });
   form.set("role", "Member");
-  assert.deepEqual(readSignupProfile(form), { profile: { display_name: "Someone New", signup_intent: "Member" } });
+  assert.ok("error" in readSignupProfile(form));
   form.set("role", "organizer");
   assert.ok("error" in readSignupProfile(form));
 });

@@ -1,0 +1,64 @@
+.circle { display: grid; gap: 1rem; color: #0a2538; }
+.notice { padding: .8rem 1rem; border-radius: .85rem; background: #e9f7f5; color: #24545a; }
+.eventCard {
+  display: grid; grid-template-columns: clamp(5.2rem, 22vw, 8.4rem) minmax(0, 1fr); align-items: center;
+  gap: clamp(.8rem, 3vw, 1.35rem); padding: clamp(.8rem, 3vw, 1.2rem);
+  border: 1.5px solid #168f97; border-radius: 1.35rem; background: #fff;
+}
+.eventArt {
+  display: grid; place-items: center; width: 100%; aspect-ratio: 1; border: 3px solid #f5ae00;
+  border-radius: 50%; background: radial-gradient(circle at 30% 25%, #fff8d5, #ffb818 68%, #ef6a00);
+  color: #7f3300;
+}
+.eventArt svg { width: 56%; height: 56%; stroke-width: 1.7; }
+.eventCard h2 { font-size: clamp(1.35rem, 5.4vw, 2.15rem); font-weight: 850; line-height: 1.05; letter-spacing: -.04em; }
+.eventFacts { display: flex; flex-wrap: wrap; gap: .38rem 1.15rem; margin-top: .6rem; }
+.eventFacts p { display: flex; align-items: center; gap: .35rem; font-weight: 700; }
+.eventFacts p:last-child { flex-basis: 100%; }
+.eventFacts svg { flex: none; color: #08767e; }
+.description { margin-top: .55rem; color: #395c63; font-size: .92rem; }
+.lotusDivider { display: grid; grid-template-columns: minmax(2rem, 1fr) auto minmax(2rem, 1fr); align-items: center; gap: .7rem; width: min(70%, 24rem); margin: -.1rem auto; color: #eaa000; }
+.lotusDivider span:first-child, .lotusDivider span:last-child { height: 1px; background: #eaa000; }
+.lotusDivider span:nth-child(2) { font-size: 1.4rem; }
+.volunteerCount {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: .65rem;
+  min-height: 4.3rem; padding: .65rem .9rem; border: 1px solid #82bec0; border-radius: 1.2rem; background: #fff;
+}
+.volunteerCount > span { display: flex; align-items: center; gap: .35rem; white-space: nowrap; }
+.volunteerCount svg { color: #08767e; }
+.spots { border-radius: 2rem; padding: .45rem .65rem; background: #e5f7dc; color: #2b651c; font-weight: 800; }
+.circleLinks { display: grid; gap: .65rem; }
+.circleLinks a {
+  display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: .75rem;
+  min-height: 4.25rem; padding: .65rem 1rem; border: 1.5px solid #168f97; border-radius: 1.15rem; background: #fff;
+  font-size: clamp(1rem, 4vw, 1.25rem);
+}
+.circleLinks a:hover { background: #edfafa; }
+.circleLinks a svg:first-child { color: #08767e; }
+.applications { display: grid; gap: .7rem; scroll-margin-top: 1rem; }
+.applications h2, .board h2 { font-size: clamp(1.25rem, 4.8vw, 1.65rem); font-weight: 850; }
+.board { display: grid; gap: .85rem; padding: clamp(.85rem, 3vw, 1.15rem); border: 1.5px solid #168f97; border-radius: 1.25rem; background: #f7fcfb; scroll-margin-top: 1rem; }
+.boardHeading { display: flex; align-items: start; justify-content: space-between; gap: .75rem; }
+.boardHeading p { margin-top: .18rem; color: #456269; font-size: .9rem; }
+.boardHeading > span { flex: none; border-radius: 2rem; padding: .28rem .55rem; background: #e5f5f4; color: #276067; font-size: .75rem; font-weight: 800; }
+.messages { display: grid; gap: .55rem; max-height: 24rem; overflow: auto; padding: .15rem; }
+.message { width: min(88%, 33rem); padding: .65rem .75rem; border: 1px solid #b9d8d8; border-radius: .9rem .9rem .9rem .2rem; background: #fff; }
+.message[data-mine="true"] { justify-self: end; border-color: #f1c58d; border-radius: .9rem .9rem .2rem .9rem; background: #fff8ed; }
+.message > div { display: flex; flex-wrap: wrap; justify-content: space-between; gap: .2rem .7rem; }
+.message time { color: #60757a; font-size: .72rem; }
+.message p { margin-top: .28rem; white-space: pre-wrap; overflow-wrap: anywhere; }
+.noMessages { padding: .85rem; border-radius: .8rem; background: #fff; color: #4c686e; text-align: center; }
+.messageForm { display: grid; gap: .35rem; }
+.messageForm label { font-weight: 800; }
+.messageForm > div { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: .55rem; }
+.messageForm textarea { width: 100%; min-height: 4.5rem; resize: vertical; padding: .65rem .75rem; border: 1.5px solid #168f97; border-radius: .85rem; background: #fff; outline: none; }
+.messageForm textarea:focus { box-shadow: 0 0 0 2px #168f9738; }
+.messageForm button { display: inline-flex; align-items: center; gap: .35rem; min-height: 2.75rem; padding: .55rem .8rem; border-radius: 2rem; background: linear-gradient(100deg, #ff9f00, #ef4c17); color: #fff; font-weight: 850; cursor: pointer; }
+.messageForm button:hover { background: #dc551a; }
+@media (max-width: 500px) {
+  .eventCard { grid-template-columns: 4.7rem minmax(0, 1fr); }
+  .volunteerCount { grid-template-columns: minmax(0, 1fr) auto; }
+  .volunteerCount .spots { grid-column: 1 / -1; justify-self: stretch; justify-content: center; }
+  .messageForm > div { grid-template-columns: minmax(0, 1fr); }
+  .messageForm button { justify-self: end; }
+}

@@ -29,6 +29,10 @@ export function isSignupIntent(value: unknown): value is SignupRole {
   return value === "Teacher" || value === "Volunteer" || value === "Member";
 }
 
+export function isJoinIntent(value: unknown): value is Exclude<SignupRole, "Member"> {
+  return value === "Teacher" || value === "Volunteer";
+}
+
 function isProfileName(value: unknown): value is string {
   return typeof value === "string" && value.trim().length > 0 && value.length <= 100;
 }
@@ -48,7 +52,7 @@ export function readSignupProfile(form: FormData): { profile: SignupProfileInput
   const lastCourse = readText(form, "lastCourse").trim();
   const expertise = [...new Set(form.getAll("expertise"))];
 
-  if (!isProfileName(name) || !isSignupIntent(intent)) {
+  if (!isProfileName(name) || !isJoinIntent(intent)) {
     return { error: "Enter a valid name and signup preference." } as const;
   }
   if (phone.length > 32) return { error: "Enter a phone number with at most 32 characters." } as const;

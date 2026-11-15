@@ -23,7 +23,7 @@ export default async function SignUpPage() {
   return (
     <AuthShell
       title="Create Your Profile"
-      description="Join as a Teacher, Volunteer, or Member."
+      description="Join as a Teacher or Volunteer."
     >
       {isLive ? <AccountSignUpForm /> : <SignUpForm />}
       {googleAvailable && <GoogleSignIn available />}

@@ -1,8 +1,8 @@
 "use client";
 
 import { useActionState, useEffect, useRef, useState, type FormEvent, type Ref } from "react";
-import { ArrowRight, Check, ChevronDown, Flower2, GraduationCap, HeartHandshake, Phone, UserRound, UsersRound } from "lucide-react";
-import { expertiseGroups, isSignupIntent, type SignupRole } from "../../lib/signup-profile";
+import { ArrowRight, Check, ChevronDown, Flower2, GraduationCap, HeartHandshake, Phone, UserRound } from "lucide-react";
+import { expertiseGroups, isJoinIntent, type SignupRole } from "../../lib/signup-profile";
 import { completeProfile, signUp } from "../auth/actions";
 import { EmailField, PasswordField } from "../auth/auth-form";
 import styles from "./sign-up.module.css";
@@ -16,12 +16,8 @@ function RolePicker({ teacherRef }: { teacherRef?: Ref<HTMLInputElement> }) {
         <span><UserRound size={23} aria-hidden="true" />Teacher</span>
       </label>
       <label className={styles.volunteer}>
-        <input className="sr-only" name="role" type="radio" value="Volunteer" />
+        <input className="sr-only" name="role" type="radio" value="Volunteer" defaultChecked />
         <span><HeartHandshake size={25} aria-hidden="true" />Volunteer</span>
-      </label>
-      <label className={styles.member}>
-        <input className="sr-only" name="role" type="radio" value="Member" defaultChecked />
-        <span><UsersRound size={23} aria-hidden="true" />Member</span>
       </label>
     </fieldset>
   );
@@ -72,7 +68,7 @@ export function SignUpForm() {
     }
 
     const role = new FormData(form).get("role");
-    if (isSignupIntent(role)) {
+    if (isJoinIntent(role)) {
       setCompleted(role);
       setHasReviewed(true);
     }

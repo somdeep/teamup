@@ -58,7 +58,7 @@
   white-space: nowrap;
 }
 .pill[data-active="true"], .filterIcon[data-active="true"] { background: #e5f7f6; border-color: var(--teal); color: #075763; }
-.pill:hover, .filterIcon:hover, .shortcut:hover { background: #edf9f8; }
+.pill:hover, .filterIcon:hover { background: #edf9f8; }
 .pill select {
   display: block;
   width: 100%;
@@ -203,17 +203,6 @@
 .cancelRequest { min-height: 2.15rem; padding: .3rem .68rem; border: 1px solid #a14420; border-radius: 2rem; background: #fff5ef; color: #8b3212; font-size: .82rem; font-weight: 800; cursor: pointer; }
 .cancelRequest:hover { background: #ffe7db; }
 
-.shortcut {
-  position: relative;
-  display: grid;
-  place-items: center;
-  width: clamp(2.2rem, 8.3vw, 2.75rem);
-  aspect-ratio: 1;
-  border-radius: 50%;
-  color: #123245;
-}
-.accountIcon { background: #f0f3f3; color: #476469; }
-.notification { position: absolute; inset: .25rem .25rem auto auto; width: .52rem; aspect-ratio: 1; border-radius: 50%; background: #db6d13; }
 .context, .pagination { display: flex; flex-wrap: wrap; align-items: center; gap: .35rem .8rem; font-size: .9rem; }
 .context { justify-content: space-between; }
 .context p { display: flex; align-items: center; flex-wrap: wrap; gap: .3rem; }
@@ -238,18 +227,25 @@
 .profileStats small { color: #294851; font-size: clamp(.67rem, 2.8vw, .88rem); overflow-wrap: anywhere; }
 .emergency, .profilePanel { border: 1px solid #8bd1d4; border-radius: 1rem; background: #effafa; padding: .8rem 1rem; }
 .profilePanel p { color: #294851; }
-.detailsActions { display: flex; flex-wrap: wrap; align-items: stretch; justify-content: center; gap: .65rem; }
-.eventContext { display: flex; flex: 1 1 17rem; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .55rem .8rem; padding: .75rem; border-radius: 1rem; background: #fff7e8; }
-.eventContext p { display: flex; flex: 1 1 100%; align-items: center; flex-wrap: wrap; gap: .35rem; color: #294851; font-size: .92rem; }
-.eventContext p svg { flex: 0 0 auto; color: #076b74; }
+.detailsActions { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: center; gap: .65rem; }
+.detailsActions > form, .requestChooser { flex: 1 1 13rem; }
+.eventContext { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: .35rem; color: #294851; font-size: .92rem; }
+.eventContext svg { flex: 0 0 auto; color: #076b74; }
 .details .invite { min-height: 3rem; padding: .55rem 1.15rem; border-radius: 2rem; background: linear-gradient(100deg, #ff9e00, #f45117); color: #fff; font-size: .95rem; }
 .details .invite:hover { background: #e75b17; }
+.detailsActions > form .invite { width: 100%; justify-content: center; }
 .details .cancelRequest { min-height: 3rem; padding-inline: 1rem; }
-.callButton { display: inline-flex; flex: 0 0 auto; align-items: center; justify-content: center; gap: .45rem; min-height: 3rem; padding: .55rem 1.2rem; border: 1.5px solid var(--teal); border-radius: 2rem; background: #fff; color: #075b66; font-weight: 800; }
+.callButton { display: inline-flex; flex: 1 1 10rem; align-items: center; justify-content: center; gap: .45rem; min-height: 3rem; padding: .55rem 1.2rem; border: 1.5px solid var(--teal); border-radius: 2rem; background: #fff; color: #075b66; font-weight: 800; }
 .callButton:hover { background: #edf9f8; }
+.requestChooser > summary { display: flex; min-height: 3rem; align-items: center; justify-content: center; gap: .4rem; padding: .55rem 1.15rem; border-radius: 2rem; background: linear-gradient(100deg, #ff9e00, #f45117); color: #fff; font-weight: 800; cursor: pointer; list-style: none; }
+.requestChooser > summary::-webkit-details-marker { display: none; }
+.requestChooser[open] { flex-basis: 100%; }
+.requestForm { display: grid; gap: .55rem; margin-top: .55rem; padding: .75rem; border: 1px solid #e8a054; border-radius: 1rem; background: #fffaf2; }
+.requestForm label { display: grid; gap: .3rem; color: #294851; font-size: .85rem; font-weight: 800; }
+.requestForm select { min-height: 2.65rem; border: 1px solid #168f97; border-radius: .75rem; background: #fff; padding: .4rem .6rem; color: #0a2538; }
 
 .directory :is(a, button, select, summary, .popover input):focus-visible,
-.details :is(a, button):focus-visible, .shortcut:focus-visible {
+.details :is(a, button):focus-visible {
   outline: 2px solid #005a65;
   outline-offset: 2px;
 }

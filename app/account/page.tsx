@@ -4,9 +4,11 @@ import { redirect } from "next/navigation";
 import { accountAccess, accountRoleLabels, teacherLanding } from "../../lib/account-access";
 import { accountProfile } from "../../lib/account-profile";
 import { sevaAvailabilityProfile } from "../../lib/seva-profile";
+import { portalNotifications } from "../../lib/portal-notifications";
 import { isLive, supabase } from "../../lib/supabase";
 import { signOut } from "../auth/actions";
 import { AuthShell } from "../auth/auth-shell";
+import { PortalHeaderActions } from "../auth/portal-header-actions";
 import styles from "../sign-up/sign-up.module.css";
 import { requestTeacherAccess } from "./actions";
 
@@ -31,8 +33,10 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
   const { data: access, error: accessError } = profile ? await accountAccess(client) : { data: null, error: null };
   const landingPage = teacherLanding(access, view, notice);
   if (landingPage) redirect(landingPage);
+  const notifications = await portalNotifications(client, data.user.id, access);
   return (
-    <AuthShell title="Your Account">
+    <AuthShell title="Your Account" headerActions={<PortalHeaderActions notificationsHref={notifications.href}
+      pendingCount={notifications.pending} notificationLabel={notifications.label} />}>
       <section className={styles.confirmation} aria-label="Account details">
         {profile && <h2>{profile.display_name}</h2>}
         <p>{data.user.email}</p>

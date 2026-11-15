@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { sevaAvailabilityProfile } from "../../lib/seva-profile";
 import { isLive, supabase } from "../../lib/supabase";
 import { AuthShell } from "../auth/auth-shell";
+import { PortalHeaderActions } from "../auth/portal-header-actions";
 import { OnboardingProgress } from "../auth/onboarding-progress";
 import { MyAvailabilityForm } from "./availability-form";
 import styles from "./availability.module.css";
@@ -25,6 +26,7 @@ export default async function MyAvailabilityPage() {
   return (
     <AuthShell title="My Availability" description="Let us know when you’re generally free to volunteer."
       backHref="/my-skills" backLabel="Back to My Skills"
+      headerActions={<PortalHeaderActions />}
       beforeTitle={profile && !profile.availability_reviewed && <OnboardingProgress step={5} />}>
       {profile ? <MyAvailabilityForm profile={profile} /> : (
         <div className={styles.unavailable}>

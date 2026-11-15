@@ -12,7 +12,6 @@ export function TeacherTiles({ pending }: { pending: number }) {
     { view: "find", name: "Find Volunteers", icon: UsersRound },
     { view: "requests", name: "Requests", icon: Inbox },
     { view: "events", name: "My Events", icon: CalendarDays },
-    { view: "circles", name: "Event Circles", icon: UsersRound },
     { view: "priority", name: "Priority Request", icon: Zap },
   ];
   return <nav aria-label="Teacher tools" className={styles.tiles}>
@@ -26,7 +25,7 @@ export function TeacherTiles({ pending }: { pending: number }) {
   </nav>;
 }
 
-export function EventList({ events, circle = false }: { events: PortalEvent[]; circle?: boolean }) {
+export function EventList({ events }: { events: PortalEvent[] }) {
   if (!events.length) return <div className={styles.empty}>
     <p>There are no events to show yet.</p>
     <Link href="/teacher?view=create" className={styles.textLink}>Create an event <ArrowRight aria-hidden="true" size={17} /></Link>
@@ -34,11 +33,10 @@ export function EventList({ events, circle = false }: { events: PortalEvent[]; c
 
   return <ul className={styles.stack}>
     {events.map(event => <li key={event.id}>
-      <Link className={styles.eventRow} href={`/teacher?event=${event.id}`}>
+      <Link className={styles.eventRow} href={`/events/${event.id}`}>
         {event.category === "priority" ? <Zap aria-hidden="true" size={23} /> : <CalendarDays aria-hidden="true" size={23} />}
         <span><strong>{event.title}</strong><small>{formatEventTime(event)}{event.city && ` · ${event.city}`}</small>
           {event.roles.length > 0 && <small>{eventRoles(event)}</small>}
-          {circle && <small>{event.invitations.filter(item => item.status === "accepted").length} confirmed · {event.volunteers_needed} needed</small>}
         </span>
         <ChevronRight aria-hidden="true" size={20} />
       </Link>

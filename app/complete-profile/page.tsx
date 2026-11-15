@@ -4,6 +4,7 @@ import { accountProfile } from "../../lib/account-profile";
 import { isLive, supabase } from "../../lib/supabase";
 import { signOut } from "../auth/actions";
 import { AuthShell } from "../auth/auth-shell";
+import { PortalHeaderActions } from "../auth/portal-header-actions";
 import { AccountSignUpForm } from "../sign-up/sign-up-form";
 import styles from "../sign-up/sign-up.module.css";
 
@@ -27,6 +28,7 @@ export default async function CompleteProfilePage() {
     <AuthShell
       title="Complete Your Profile"
       description="Choose how you’d like to join TeamUp."
+      headerActions={<PortalHeaderActions />}
     >
       <AccountSignUpForm verifiedProfile={{ name: defaultName?.trim().slice(0, 100) ?? "", email: user.email ?? "" }} />
       <form action={signOut} className={styles.authFooter}>

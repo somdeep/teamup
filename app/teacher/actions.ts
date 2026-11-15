@@ -19,7 +19,7 @@ export async function createTeacherEvent(_: AuthResult, form: FormData): Promise
       .eq("id", input.event.id).eq("organizer_user_id", user.id).maybeSingle();
     if (!existing) return { error: "Refresh the event form and try again." };
   }
-  redirect(`/teacher?event=${input.event.id}&notice=created`);
+  redirect(`/events/${input.event.id}?notice=created`);
 }
 
 export async function inviteVolunteer(form: FormData) {
@@ -30,7 +30,7 @@ export async function inviteVolunteer(form: FormData) {
 
   const { data, error } = await client.rpc("teamup_invite", { p_event_id: eventId, p_person_id: personId });
   const notice = error ? "invite-failed" : data ? "invited" : "already-invited";
-  redirect(`/teacher?event=${eventId}&notice=${notice}`);
+  redirect(`/events/${eventId}?notice=${notice}`);
 }
 
 export async function cancelInvitation(form: FormData) {
@@ -43,5 +43,5 @@ export async function cancelInvitation(form: FormData) {
     .eq("id", invitationId).eq("event_id", eventId).eq("status", "pending")
     .select("id").maybeSingle();
   const notice = !error && data ? "request-cancelled" : "cancel-failed";
-  redirect(`/teacher?event=${eventId}&notice=${notice}`);
+  redirect(`/events/${eventId}?notice=${notice}`);
 }

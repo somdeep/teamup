@@ -31,7 +31,7 @@ export function AuthShell({
               <Image src="/teamup-logo.webp" alt="" width={720} height={720} unoptimized />
             </span>
           </Link>
-          {headerActions && <nav className={styles.headerActions} aria-label="Teacher shortcuts">{headerActions}</nav>}
+          {headerActions && <nav className={styles.headerActions} aria-label="Account shortcuts">{headerActions}</nav>}
           {beforeTitle}
           <h1>{title}</h1>
           {description && <p>{description}</p>}

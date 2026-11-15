@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import {
-  Bell, CalendarDays, Camera, Car, ChefHat, ChevronRight, ClipboardCheck, HeartHandshake, Phone,
+  CalendarDays, Camera, Car, ChefHat, ChevronRight, ClipboardCheck, HeartHandshake, Phone,
   Laptop, MapPin, Megaphone, Music2, Palette, UserPlus, UserRound, UsersRound, Wrench,
   type LucideIcon,
 } from "lucide-react";
@@ -16,20 +16,6 @@ const skillIcons: Record<string, LucideIcon> = {
   "Kitchen seva": ChefHat, "Music & bhajans": Music2, Photography: Camera, "Registration desk": ClipboardCheck,
   "Setup & logistics": Wrench, "Social media": Megaphone, "Tech & AV": Laptop,
 };
-
-export function DirectoryHeader({ hasRequests }: { hasRequests: boolean }) {
-  return (
-    <>
-      <Link className={styles.shortcut} href="/teacher?view=requests" aria-label={hasRequests ? "Requests, pending responses" : "Requests"}>
-        <Bell aria-hidden="true" size={22} />
-        {hasRequests && <span className={styles.notification} />}
-      </Link>
-      <Link className={`${styles.shortcut} ${styles.accountIcon}`} href="/account?view=settings" aria-label="Your Account">
-        <UserRound aria-hidden="true" size={22} />
-      </Link>
-    </>
-  );
-}
 
 function Avatar({ volunteer, large = false }: { volunteer: VolunteerDirectoryProfile; large?: boolean }) {
   const words = volunteer.full_name.trim().split(/\s+/);
@@ -126,16 +112,19 @@ export function VolunteerDirectory({ filter, events, event, volunteers, hasNext 
   </div>;
 }
 
-export function VolunteerDirectoryDetails({ volunteer, event, phone }: { volunteer: VolunteerDirectoryProfile; event?: PortalEvent; phone: string | null }) {
+export function VolunteerDirectoryDetails({ volunteer, event, events, phone }: {
+  volunteer: VolunteerDirectoryProfile;
+  event?: PortalEvent;
+  events: PortalEvent[];
+  phone: string | null;
+}) {
   const phoneHref = phone?.replace(/[^\d+*#;,]/g, "");
   const availability = volunteer.availability_patterns.length
     ? volunteer.availability_patterns.join(", ")
     : directoryAvailability[volunteer.availability_status];
   return <section className={styles.details} aria-label="Volunteer details">
     {volunteer.skills.length > 0 && <div className={styles.profileSkills}>
-      <h2>Skills</h2>
       <SkillList skills={volunteer.skills} />
-      {volunteer.skills_simulated && <p className={styles.city}>Sample skills</p>}
     </div>}
     <div className={styles.profileStats}>
       <div><CalendarDays aria-hidden="true" size={28} /><span><strong>Availability</strong><small>{availability}</small></span></div>
@@ -147,11 +136,23 @@ export function VolunteerDirectoryDetails({ volunteer, event, phone }: { volunte
       <h2>Interested in learning</h2>
       <p>{volunteer.interests.join(" · ")}</p>
     </div>}
+    {event && <p className={styles.eventContext}><CalendarDays size={17} aria-hidden="true" /> Request for <strong>{event.title}</strong></p>}
     <div className={styles.detailsActions}>
-      {event && <div className={styles.eventContext}>
-        <p><CalendarDays size={17} aria-hidden="true" /> For <strong>{event.title}</strong></p>
-        <InviteButton volunteer={volunteer} event={event} request />
-      </div>}
+      {event ? <InviteButton volunteer={volunteer} event={event} request /> : events.length > 0 ? (
+        <details className={styles.requestChooser}>
+          <summary><UserPlus size={20} aria-hidden="true" /> Send Request</summary>
+          <form action={inviteVolunteer} className={styles.requestForm}>
+            <input type="hidden" name="personId" value={volunteer.person_id} />
+            <label>Choose an event
+              <select name="eventId" required defaultValue="">
+                <option value="" disabled>Select event</option>
+                {events.map(item => <option key={item.id} value={item.id}>{item.title}</option>)}
+              </select>
+            </label>
+            <button className={styles.invite}>Send Request</button>
+          </form>
+        </details>
+      ) : <Link className={styles.invite} href="/teacher?view=create"><UserPlus size={20} aria-hidden="true" /> Create Event First</Link>}
       {phoneHref && <a className={styles.callButton} href={`tel:${phoneHref}`} aria-label={`Call ${volunteer.full_name}`}>
         <Phone size={19} aria-hidden="true" /> Call
       </a>}
