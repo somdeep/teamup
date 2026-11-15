@@ -23,8 +23,10 @@ export const expertiseGroups = [
 
 const allowedExpertise = new Set(expertiseGroups.flatMap(group => group.options));
 
-function isSignupIntent(value: unknown): value is "Teacher" | "Volunteer" {
-  return value === "Teacher" || value === "Volunteer";
+export type SignupRole = "Teacher" | "Volunteer" | "Member";
+
+export function isSignupIntent(value: unknown): value is SignupRole {
+  return value === "Teacher" || value === "Volunteer" || value === "Member";
 }
 
 function isProfileName(value: unknown): value is string {
@@ -33,7 +35,7 @@ function isProfileName(value: unknown): value is string {
 
 export type SignupProfileInput = {
   display_name: string;
-  signup_intent: "Teacher" | "Volunteer";
+  signup_intent: SignupRole;
   contact_phone?: string;
   last_course?: string;
   signup_expertise?: string[];

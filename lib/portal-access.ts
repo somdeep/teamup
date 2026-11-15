@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { accountAccess } from "./account-access";
 import { isLive, supabase } from "./supabase";
 
 export async function portalSession() {
@@ -8,15 +9,17 @@ export async function portalSession() {
   if (error || !user) redirect("/login");
   if (!user.email_confirmed_at) redirect("/login?notice=check-email");
 
-  const { data: profile, error: profileError } = await client.from("profiles")
-    .select("full_name,role,person_id").eq("id", user.id).maybeSingle();
-  if (profileError) throw new Error("Could not confirm your TeamUp profile.");
-  if (!profile) redirect("/account");
-  return { client, user, profile };
+  const [{ data: profile, error: profileError }, { data: access, error: accessError }] = await Promise.all([
+    client.from("profiles").select("full_name,person_id").eq("id", user.id).maybeSingle(),
+    accountAccess(client),
+  ]);
+  if (profileError || accessError) throw new Error("Could not confirm your TeamUp profile.");
+  if (!profile || !access) redirect("/account");
+  return { client, user, profile, access };
 }
 
 export async function teacherSession() {
   const session = await portalSession();
-  if (session.profile.role !== "organizer") redirect("/account?notice=teacher-access");
+  if (session.access.role !== "teacher") redirect("/account?notice=teacher-access");
   return session;
 }

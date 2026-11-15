@@ -96,7 +96,7 @@
 
 .roles {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: .2rem;
   margin-bottom: .45rem;
   padding: .2rem;
@@ -118,14 +118,17 @@
   gap: clamp(.3rem, 1.75vw, .55rem);
   padding: .25rem;
   border-radius: 2rem;
-  font-size: clamp(.875rem, 4vw, 1.2rem);
+  font-size: clamp(.78rem, 3.6vw, 1.05rem);
   font-weight: 800;
 }
 
 .teacher { color: #006c75; }
 .volunteer { color: #b44504; }
+.member { color: #36515a; }
+.roles label svg { width: clamp(.95rem, 4vw, 1.4rem); flex: none; }
 .teacher input:checked + span { color: #fff; background: linear-gradient(125deg, #007e88, #006b72); }
 .volunteer input:checked + span { color: #fff; background: linear-gradient(125deg, #c44c00, #a93400); }
+.member input:checked + span { color: #fff; background: #36515a; }
 
 .field {
   display: flex;

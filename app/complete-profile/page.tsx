@@ -26,7 +26,7 @@ export default async function CompleteProfilePage() {
   return (
     <AuthShell
       title="Complete Your Profile"
-      description={<>Choose how you’d like to join as a <strong>Teacher</strong> or <strong>Volunteer</strong>.</>}
+      description="Choose how you’d like to join TeamUp."
     >
       <AccountSignUpForm verifiedProfile={{ name: defaultName?.trim().slice(0, 100) ?? "", email: user.email ?? "" }} />
       <form action={signOut} className={styles.authFooter}>

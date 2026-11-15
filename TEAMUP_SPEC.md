@@ -8,7 +8,10 @@ Help Art of Living organizers find, invite, and coordinate volunteers for seva o
 
 ## Roles
 - **Volunteer:** manages personal profile, skills, location, weekly availability and responses to invitations.
-- **Organizer / teacher:** creates events, searches and matches volunteers, sends invitations and tracks responses.
+- **Teacher:** creates events and uses the Teacher Portal to coordinate volunteer staffing. Verified roster matches receive access automatically. Other signed-in users can request access.
+- **Member:** manages a TeamUp profile and can request Teacher access.
+
+Organizer, Co-Organizer, Coordinator, Teacher, and Co-Teacher are assignments on individual events. One person can hold several assignments on the same event.
 
 ## Five MVP features
 1. **Volunteer profiles:** account, display name, city/area, controlled skill tags, optional interests and editable details. Private contact information should not be visible broadly.
@@ -20,7 +23,7 @@ Help Art of Living organizers find, invite, and coordinate volunteers for seva o
 ## Essential flows
 **Volunteer:** Sign in → create/edit profile → choose skills → set availability → view invitation → accept/decline.
 
-**Organizer:** Sign in → create event → specify needs → view matching volunteers → invite → see response status.
+**Teacher:** Sign in → complete the profile → open the Teacher Portal → create or manage an event → find and invite volunteers → see responses.
 
 ## Six screens
 1. [Landing page](docs/landing-page.md), sign-in, and role-aware navigation
@@ -38,10 +41,11 @@ Design mobile-first; use friendly plain language, readable typography, warm neut
 - GitHub for repository; Vercel for hosting
 
 ## Minimum data model
-- `profiles`: `id`, `display_name`, `role`, `city_area`, `created_at` (email managed by Auth)
+- `profiles`: account, linked person, and `account_role` (Teacher, Volunteer, or Member). Supabase Auth manages the sign-in identity.
 - `volunteer_profiles`: `user_id`, `skills`, `interests`
 - `availability`: `id`, `volunteer_id`, `day_of_week`, `start_time`, `end_time`, `timezone`
-- `events`: `id`, `organizer_id`, `title`, `description`, `location`, `starts_at`, `ends_at`, `required_skills`, `volunteers_needed`, `created_at`
+- `events`: event details, schedule, staffing needs, and creator reference.
+- `event_assignments`: `event_id`, `person_id`, and `role`, unique together.
 - `invitations`: `id`, `event_id`, `volunteer_id`, `status`, `invited_at`, `responded_at`; unique pair `(event_id, volunteer_id)`
 
 ## Matching version 1
@@ -51,13 +55,15 @@ First restrict matches to volunteers available at the event time, then prioritiz
 - Authenticate users; restrict operations by role and resource ownership.
 - Apply Supabase RLS to all relevant tables.
 - Volunteers edit only their own profiles, availability and invitation responses.
-- Organizers manage only their own events and related invitations.
+- Teachers manage their own events and events where they have a coordination assignment. Teaching-only assignments show event details.
 - Do not expose private contacts in public search; validate all writes server-side.
 - Handle loading, empty, validation and error states; respect event time zones.
 - Use fictional volunteers in the demo.
 
 ## Out of scope
 AI matching, WhatsApp/SMS/email automation, third-party calendar sync, payment processing, native mobile apps, advanced analytics and reputation systems.
+
+See [Future scope](docs/future-scope.md) for volunteer event creation.
 
 ## Implementation sequence
 1. Initialize GitHub repository, Next.js app, `.env.example`, README, Supabase schema and auth/role authorization.
@@ -73,4 +79,4 @@ Seed 10–20 fictional volunteers. Sign in as an organizer, create a photography
 Read this specification before making major changes. Propose and implement small testable increments. Run lint, type checking, tests and production build; explicitly state what passed and what remains blocked. Keep README and setup instructions current. Never commit secrets. Place a short `AGENTS.md` in the repository that points here.
 
 ## Open decisions
-Confirm initial skill list and location options, how organizer privileges are approved, and whether one-off availability exceptions are needed. Prefer the simplest hackathon-safe defaults and record decisions.
+Confirm initial skill list and location options, and whether one-off availability exceptions are needed.

@@ -1,6 +1,6 @@
 # Supabase email authentication
 
-TeamUp uses Supabase Auth for email and password accounts. Once Supabase is configured, **Get Started** opens account signup and **Log In** opens email login. A verified account opens `/account`. The signup choice of Teacher or Volunteer is stored as a preference only. Profile setup and teacher approval are separate steps.
+TeamUp uses Supabase Auth for email and password accounts and Google sign-in. Both methods open the same profile setup for new accounts. Completed Teacher accounts open the Teacher Portal on sign-in. Volunteer and Member accounts open Your Account, and pending Teacher requests open a status page in the portal.
 
 This flow uses the imported TeamUp schema with `people`, `profiles`, `volunteer_profiles`, and `courses`. Apply the [signup profiles migration](../supabase/migrations/20261114231330_signup_profiles.sql) to that schema before deploying this version. Existing verified accounts with signup details are migrated on their next sign-in.
 
@@ -37,7 +37,7 @@ The app supplies a fixed redirect path for each email. A GET renders the form an
 
 Supabase Auth manages verification. `public.profiles.id` references the Auth user, and `profiles.person_id` links to the canonical `public.people` record. A verified email with one matching person links to that record. A verified email without a match creates an app person. Profile details and course choices are attached to the account, contact phone and last course go on the linked person, and volunteer skill selections use the same tags as the imported directory. Email signup uses Auth metadata to carry the form through verification.
 
-Signed-in users can read their account profile through RLS. Account linking and signup writes go through an authenticated database function that uses the caller’s verified email. Selecting Teacher records a preference. An administrator assigns organizer access separately.
+Signed-in users can read their account profile through RLS. Account linking and signup writes use the caller’s verified email. Selecting Teacher requests access. A verified email linked to a trusted teacher record receives access automatically. New claims stay pending for review. See [Account roles and Teacher access](DATABASE.md#account-roles-and-teacher-access).
 
 After the basic profile, **Tell Us About Yourself** collects skills, learning interests, general availability, specific dates, and emergency seva preferences. Apply the [seva preferences migration](../supabase/migrations/20261114235617_seva_preferences.sql) to enable this step. Volunteers can update their preferences from **Your Account**. The optional photo is visible to the signed-in owner. Event matching uses scheduled time slots.
 

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ArrowRight, CalendarDays, CalendarPlus, ChevronRight, Inbox, MapPin, UsersRound, Zap } from "lucide-react";
 import { formatEventTime } from "../../lib/teacher-event";
-import type { DirectoryVolunteer, MatchedVolunteer, PortalEvent, PortalInvitation } from "../../lib/teacher-data";
+import { eventRoles, type DirectoryVolunteer, type MatchedVolunteer, type PortalEvent, type PortalInvitation } from "../../lib/teacher-data";
 import { inviteVolunteer } from "./actions";
 import styles from "./teacher.module.css";
 
@@ -36,6 +36,7 @@ export function EventList({ events, circle = false }: { events: PortalEvent[]; c
       <Link className={styles.eventRow} href={`/teacher?event=${event.id}`}>
         {event.category === "priority" ? <Zap aria-hidden="true" size={23} /> : <CalendarDays aria-hidden="true" size={23} />}
         <span><strong>{event.title}</strong><small>{formatEventTime(event)}{event.city && ` · ${event.city}`}</small>
+          {event.roles.length > 0 && <small>{eventRoles(event)}</small>}
           {circle && <small>{event.invitations.filter(item => item.status === "accepted").length} confirmed · {event.volunteers_needed} needed</small>}
         </span>
         <ChevronRight aria-hidden="true" size={20} />

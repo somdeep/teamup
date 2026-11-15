@@ -34,11 +34,12 @@ The folder also had a sheet pointing to Art of Living's live course API. The she
 | --- | --- | --- |
 | `people` | Everyone, after combining duplicates | 10,368 |
 | `person_sources` | Which original records belong to each person | 29,120 |
-| `profiles` | App accounts and their role (volunteer or organizer) | Filled at sign-up |
+| `profiles` | App accounts and their Teacher, Volunteer, or Member role | Filled at sign-up |
 | `volunteer_profiles` | Volunteers' skills and whether they're open to last-minute seva | 1,175 |
 | `availability` | Weekly free times | 2,345 |
 | `events` | Programs and events, with time, place, and what help they need | 903 |
-| `invitations` | Who's been invited to what, and their answer | Filled by organizers |
+| `event_assignments` | Organizer, Co-Organizer, Coordinator, Teacher, and Co-Teacher assignments per event and person | Imported from matching sources and added for new event creators |
+| `invitations` | Who's been invited to what, and their answer | Filled by teachers coordinating an event |
 | `courses` | Course names for the sign-up form | 16 |
 
 For search, organizers go through two helpers rather than the tables. `volunteer_directory` lists volunteers with their city, skills, and last course, but no contact details. `match_volunteers` takes an event and returns the best-fit volunteers, each with a short reason like "Skills: Photography" or "Free on Sundays at this time."
@@ -63,19 +64,37 @@ The files don't say what skills volunteers have, when they're free, or what each
 
 Every table has Row Level Security turned on. These are rules inside the database itself, checked on every request, so they hold even if someone tampers with the app in their browser.
 
-| | Volunteer | Organizer (teacher) |
+| | Volunteer | Teacher |
 | --- | --- | --- |
 | Own profile, skills, availability | See and edit | See and edit |
 | Other volunteers | Can't see | Can search, without emails or phones |
-| Events | See all | See all; create and edit their own |
-| Invitations | See their own; accept or decline | Send for their events; see responses |
+| Events | See all | See all; create events and edit the events they coordinate |
+| Invitations | See their own; accept or decline | Send and see responses for events they coordinate |
 | Contact details | Only their own | Only for people they've invited |
 
-An administrator grants organizer access on a verified account. The Teacher choice at signup records a preference. The database prevents users from changing their own role and prevents duplicate invitations for the same event and volunteer.
+The database controls account role assignments and prevents duplicate invitations for the same event and volunteer.
+
+## Account roles and Teacher access
+
+Apply the [account roles migration](../supabase/migrations/20261115023515_account_roles.sql) after the portal and recommendation migrations. `profiles.account_role` is the source of truth for Teacher, Volunteer, and Member. The generated `profiles.role` column serves the previous app release during rollout.
+
+TeamUp recognizes a roster teacher when a verified account links to a `people` record with `origin = 'app'`, `is_teacher = true`, and the same verified email. Selecting Teacher during signup submits one request when a roster match is unavailable. Volunteer and Member accounts can also request Teacher access from **Your Account**.
+
+An administrator can read pending requests in `public.teacher_access_requests` and join `account_id` to `public.profiles.id`. Review a request from the Supabase SQL Editor with `select public.teamup_review_teacher_access('<account UUID>', true);`. Pass `false` to decline a pending request. Approval gives the account the Teacher role and marks its linked person as a teacher.
 
 ## Teacher Portal
 
-Apply the [Teacher Portal migration](../supabase/migrations/20261115005932_teacher_portal.sql) after the onboarding migrations. The portal uses owned events, the organizer directory, and in-app invitations. Matching checks whether a volunteer’s scheduled slots cover the full event across both time zones. Priority events rank volunteers open to Emergency Seva first among available matches. Volunteers accept or decline from **Your Account → Invitations**.
+Apply the [Teacher Portal migration](../supabase/migrations/20261115005932_teacher_portal.sql) after the onboarding migrations. Matching checks whether a volunteer’s scheduled slots cover the full event across both time zones. Priority events rank volunteers open to Emergency Seva first among available matches. Volunteers accept or decline from **Your Account → Invitations**.
+
+### Event assignments
+
+Apply the [event assignments migration](../supabase/migrations/20261115023516_event_assignments.sql) after the account roles migration. Each row in `event_assignments` connects one person to one event in one role. A Teacher can be a Coordinator at one event and the Organizer and Teacher at another. The Teacher Portal shows all of their assignments.
+
+Teachers with an Organizer, Co-Organizer, or Coordinator assignment can edit that event, find matches, and send invitations. Teaching and Co-Teaching assignments display the event details. The original owner continues to have management access, including the primary person already stored for imported events. A Teacher who creates an event in TeamUp gets its first Organizer assignment. Assignments from mock data grant access only after the linked account has Teacher access.
+
+Harmony supplies 847 assignments across 303 programs. The file uses Organizer, Coordinator, Teacher, and Co-Teacher. The model also supports Co-Organizer for future assignments. Retreat Guru supplies 307 teacher assignments across 200 programs through its teacher list. Eventbrite supplies organizer IDs without a linked TeamUp person in the cleaned data, so those IDs cannot establish an assignment.
+
+During a full seed, assignments are resolved through `events.source_system` and `events.source_id`, plus `person_sources.source_table` and `person_sources.external_id`. In an already seeded project, run `npm run seed -- --event-assignments-only` to add missing assignments without reloading the events or people. A repeat run adds zero rows for assignments already present.
 
 ## Keys and the seed script
 

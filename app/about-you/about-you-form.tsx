@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useActionState, useEffect, useState } from "react";
-import { ArrowRight, CalendarDays, Camera, ChevronDown, Heart, HeartHandshake, Sprout, UserRound } from "lucide-react";
+import { ArrowRight, CalendarDays, Camera, ChevronDown, Heart, Sprout, UserRound } from "lucide-react";
 import { sevaSkills } from "../../lib/signup-profile";
 import { availabilityOptions, maxPhotoBytes, type SevaProfile } from "../../lib/seva-preferences";
 import signup from "../sign-up/sign-up.module.css";
@@ -55,7 +55,6 @@ function ChoiceGroup({ name, label, options, selected, onChange }: {
 
 export function AboutYouForm({ profile }: { profile: SevaProfile }) {
   const [state, save, pending] = useActionState(saveAboutYou, {});
-  const [intent, setIntent] = useState(profile.intent);
   const [skills, setSkills] = useState(profile.skills.filter(skill => sevaSkills.some(option => option === skill)));
   const [interests, setInterests] = useState(profile.interests.filter(skill => sevaSkills.some(option => option === skill)));
   const [availability, setAvailability] = useState(profile.availability);
@@ -97,18 +96,7 @@ export function AboutYouForm({ profile }: { profile: SevaProfile }) {
       if (removePhoto) form.set("removePhoto", "on");
       save(form);
     }}>
-      <fieldset className={signup.roles} aria-describedby="teacher-access">
-        <legend className="sr-only">Choose how you’d like to join</legend>
-        <label className={signup.teacher}>
-          <input className="sr-only" type="radio" name="role" value="Teacher" checked={intent === "Teacher"} onChange={() => setIntent("Teacher")} />
-          <span><UserRound aria-hidden="true" size={23} />Teacher</span>
-        </label>
-        <label className={signup.volunteer}>
-          <input className="sr-only" type="radio" name="role" value="Volunteer" checked={intent === "Volunteer"} onChange={() => setIntent("Volunteer")} />
-          <span><HeartHandshake aria-hidden="true" size={25} />Volunteer</span>
-        </label>
-      </fieldset>
-      <p id="teacher-access" className="sr-only">Teacher access requires separate approval.</p>
+      <input type="hidden" name="role" value={profile.intent} />
 
       <div>
         <label className={`${styles.row} ${styles.photo}`}>

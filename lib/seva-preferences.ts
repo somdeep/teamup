@@ -1,4 +1,4 @@
-import { sevaSkills, type SignupProfileInput } from "./signup-profile";
+import { isSignupIntent, sevaSkills, type SignupProfileInput } from "./signup-profile";
 
 export const availabilityOptions = ["Weekdays", "Weekends", "Evenings", "Flexible", "Specific Dates"] as const;
 export const maxSpecificDates = 20;
@@ -49,7 +49,7 @@ export function readSevaAvailability(form: FormData): { preferences: SevaAvailab
 
 export function readSevaPreferences(form: FormData): { preferences: SevaPreferences } | { error: string } {
   const intent = form.get("role");
-  if (intent !== "Volunteer" && intent !== "Teacher") return { error: "Choose Teacher or Volunteer." };
+  if (!isSignupIntent(intent)) return { error: "Choose Teacher, Volunteer, or Member." };
 
   const skillSelections = readSevaSkills(form);
   if (!skillSelections) return { error: "Choose skills and learning interests from the list." };

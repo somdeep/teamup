@@ -1,6 +1,7 @@
 // TeamUp seed script: loads data/*.csv, merges duplicate people, and uploads to Supabase.
 // Run from the repo root:  npm run seed           (uploads)
 //                          npm run seed -- --dry-run   (merges and scores only, uploads nothing)
+//                          npm run seed -- --event-assignments-only   (backfills existing events)
 // Needs NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in .env.local. No extra packages.
 import { readFileSync } from 'node:fs';
 import { randomUUID, createHash } from 'node:crypto';
@@ -33,6 +34,42 @@ const hash = s => createHash('sha256').update(s).digest();
 const mode = arr => { const m = new Map(); for (const v of arr) if (v) m.set(v, (m.get(v) || 0) + 1); let b = null, n = 0; for (const [v, c] of m) if (c > n) { b = v; n = c; } return b; };
 const niceCase = vals => mode(vals.filter(v => v && v !== v.toUpperCase())) || mode(vals);
 
+const hPrograms = load('harmony_programs');
+const hPeople = load('harmony_program_people');
+const rgPrograms = load('retreat_guru_programs');
+const harmonyProgramIds = new Map(hPrograms.map(p => [p.source_record_id, p.program_id]));
+const harmonyRoles = new Map([
+  ['Organizer', 'organizer'], ['Co-Organizer', 'co_organizer'], ['Coordinator', 'coordinator'],
+  ['Teacher', 'teacher'], ['Co-Teacher', 'co_teacher'],
+]);
+const eventAssignments = hPeople.map(p => {
+  const role = harmonyRoles.get(t(p.role));
+  const eventId = harmonyProgramIds.get(p.program_source_record_id);
+  if (!role || !eventId || !p.contact_id) throw new Error('A Harmony assignment has an invalid role or source link.');
+  return {
+    source_system: 'harmony', event_source_id: eventId, source_table: 'harmony_program_people',
+    person_external_id: p.contact_id, role,
+  };
+});
+for (const program of rgPrograms) {
+  for (const teacherId of json(program.program_info)?.teachers ?? []) {
+    eventAssignments.push({
+      source_system: 'retreat_guru', event_source_id: program.program_id, source_table: 'retreat_guru_teachers',
+      person_external_id: teacherId, role: 'teacher',
+    });
+  }
+}
+
+if (process.argv.includes('--event-assignments-json')) {
+  console.log(JSON.stringify(eventAssignments));
+  process.exit(0);
+}
+if (process.argv.includes('--event-assignments-only')) {
+  if (DRY) console.log(`Event assignments: ${eventAssignments.length}. Dry run: nothing uploaded.`);
+  else await uploadEventAssignments();
+  process.exit(0);
+}
+
 const TZ = { atlanta: 'America/New_York', austin: 'America/Chicago', boone: 'America/New_York', boston: 'America/New_York', brampton: 'America/Toronto', calgary: 'America/Edmonton', chicago: 'America/Chicago', denver: 'America/Denver', detroit: 'America/Detroit', edmonton: 'America/Edmonton', halifax: 'America/Halifax', mississauga: 'America/Toronto', montreal: 'America/Toronto', 'new york': 'America/New_York', ottawa: 'America/Toronto', phoenix: 'America/Phoenix', 'quebec city': 'America/Toronto', raleigh: 'America/New_York', 'san jose': 'America/Los_Angeles', seattle: 'America/Los_Angeles', toronto: 'America/Toronto', vancouver: 'America/Vancouver', victoria: 'America/Vancouver', winnipeg: 'America/Winnipeg', online: null };
 const CITY = Object.fromEntries(Object.keys(TZ).map(k => [k, k.replace(/\b\w/g, c => c.toUpperCase())]));
 const city = s => CITY[t(s).toLowerCase()] || (t(s) || null);
@@ -53,7 +90,6 @@ for (const a of load('eventbrite_attendees')) {
         course: a.cancelled !== 'True' && ev ? { name: ev.name, date: ev.starts_at_local.slice(0, 10) } : null });
 }
 
-const hPrograms = load('harmony_programs');
 const hProg = new Map(hPrograms.map(p => [p.program_id, p]));
 for (const p of load('harmony_program_participants')) {
   const prog = hProg.get(p.program_id), attended = ['Attended', 'Partial'].includes(p.attendance_status);
@@ -63,7 +99,6 @@ for (const p of load('harmony_program_participants')) {
         course: attended && prog ? { name: prog.product_name, date: prog.start_date } : null });
 }
 
-const rgPrograms = load('retreat_guru_programs');
 for (const p of load('retreat_guru_people'))
   add({ system: 'retreat_guru', table: 'retreat_guru_people', ext: p.person_id, first: p.first_name, last: p.last_name, email: p.email, phone: p.phone, city: p.city, keys: ['rg:' + p.person_id] });
 for (const r of load('retreat_guru_registrations'))
@@ -71,7 +106,7 @@ for (const r of load('retreat_guru_registrations'))
         course: r.status === 'completed' ? { name: r.program_name, date: r.start_date } : null });
 
 // Teachers and organizers (not in the answer key, merged by email and name)
-const hPeople = load('harmony_program_people'), seenContact = new Set();
+const seenContact = new Set();
 for (const p of hPeople) {
   if (seenContact.has(p.contact_id)) continue; seenContact.add(p.contact_id);
   const [first, ...rest] = t(p.name).split(' ');
@@ -178,15 +213,21 @@ console.log(`Unique people after merge: ${people.length}  (answer key: 9970 + te
 console.log(`Merge accuracy:            precision ${pct(precision)}, recall ${pct(recall)}`);
 console.log(`Volunteers: ${vols.length}  Teachers: ${people.filter(p => p.is_teacher).length}`);
 console.log(`Events: ${events.length}  (upcoming: ${events.filter(e => e.status === 'scheduled').length})  Courses: ${courses.length}`);
+console.log(`Event assignments: ${eventAssignments.length}`);
 if (DRY) { console.log('\nDry run: nothing uploaded.'); process.exit(0); }
 
 // ---------- 6. Upload ----------
-const URL_ = process.env.NEXT_PUBLIC_SUPABASE_URL, KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
-if (!URL_ || !KEY) { console.error('Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY in .env.local'); process.exit(1); }
-const headers = { apikey: KEY, 'Content-Type': 'application/json', Prefer: 'return=minimal', ...(KEY.startsWith('eyJ') ? { Authorization: `Bearer ${KEY}` } : {}) };
-async function call(path, body) {
+async function call(path, body, prefer = 'return=minimal') {
+  const URL_ = process.env.NEXT_PUBLIC_SUPABASE_URL, KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!URL_ || !KEY) throw new Error('Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY in .env.local');
+  const headers = { apikey: KEY, 'Content-Type': 'application/json', Prefer: prefer, ...(KEY.startsWith('eyJ') ? { Authorization: `Bearer ${KEY}` } : {}) };
   const res = await fetch(`${URL_}/rest/v1/${path}`, { method: 'POST', headers, body: JSON.stringify(body) });
   if (!res.ok) throw new Error(`${path}: ${res.status} ${await res.text()}`);
+  return res;
+}
+async function uploadEventAssignments() {
+  const response = await call('rpc/teamup_import_event_assignments', { p_assignments: eventAssignments }, 'return=representation');
+  console.log(`  ✓ event_assignments: ${await response.json()} added from ${eventAssignments.length} source rows`);
 }
 async function insert(table, rows) {
   for (let i = 0; i < rows.length; i += 1000) await call(table, rows.slice(i, i + 1000));
@@ -199,6 +240,7 @@ await insert('person_sources', sources);
 await insert('volunteer_profiles', vols);
 await insert('availability', avail);
 await insert('events', events);
+await uploadEventAssignments();
 await insert('courses', courses);
 await call('rpc/relink_profiles', {});
 console.log('Done.');

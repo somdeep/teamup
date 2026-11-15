@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { accountAccess, accountRoleLabels, teacherLanding } from "../../lib/account-access";
 import { accountProfile } from "../../lib/account-profile";
 import { sevaAvailabilityProfile } from "../../lib/seva-profile";
 import { isLive, supabase } from "../../lib/supabase";
 import { signOut } from "../auth/actions";
 import { AuthShell } from "../auth/auth-shell";
 import styles from "../sign-up/sign-up.module.css";
+import { requestTeacherAccess } from "./actions";
 
 export const metadata: Metadata = { title: "Your Account | TeamUp", robots: { index: false } };
 
@@ -26,15 +28,16 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
   }
 
   const { notice, view } = await searchParams;
-  const { data: organizer } = profile ? await client.rpc("is_organizer") : { data: false };
-  if (organizer === true && view !== "settings" && !notice) redirect("/teacher");
+  const { data: access, error: accessError } = profile ? await accountAccess(client) : { data: null, error: null };
+  const landingPage = teacherLanding(access, view, notice);
+  if (landingPage) redirect(landingPage);
   return (
     <AuthShell title="Your Account">
       <section className={styles.confirmation} aria-label="Account details">
         {profile && <h2>{profile.display_name}</h2>}
         <p>{data.user.email}</p>
         {profile ? <>
-          <p>Signup preference · {profile.signup_intent}</p>
+          {access && <p>Role · {accountRoleLabels[access.role]}</p>}
           {profile.contact_phone && <p>Phone · {profile.contact_phone}</p>}
           {profile.last_course && <p>Last course · {profile.last_course}</p>}
           {profile.courses.length > 0 && <p>Courses · {profile.courses.join(", ")}</p>}
@@ -44,8 +47,16 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
         {notice === "seva-saved" && <p role="status">Your seva preferences were saved.</p>}
         {notice === "skills-saved" && <p role="status">Your skills and learning interests were saved.</p>}
         {notice === "availability-saved" && <p role="status">Your profile was saved.</p>}
-        {notice === "teacher-access" && <p role="status">The Teacher Portal is available to approved organizers.</p>}
-        {organizer === true && <Link className="landing-button primary" href="/teacher">Teacher Portal</Link>}
+        {notice === "teacher-access" && <p role="status">Request Teacher access to use event and invitation tools.</p>}
+        {notice === "teacher-request-failed" && <p role="alert">We couldn’t send your Teacher access request. Please try again.</p>}
+        {accessError && <p role="alert">We couldn’t check your account role. Refresh to try again.</p>}
+        {access && (access.role === "teacher" || access.teacher_request === "pending") && (
+          <Link className="landing-button primary" href="/teacher">Teacher Portal</Link>
+        )}
+        {access && access.role !== "teacher" && access.teacher_request === "declined" && <p>Your Teacher access request was declined.</p>}
+        {access && access.role !== "teacher" && !access.teacher_request && (
+          <form action={requestTeacherAccess}><button className="landing-button secondary">Request Teacher Access</button></form>
+        )}
         {profile && <Link className="landing-button secondary" href="/invitations">Invitations</Link>}
         {profile && <Link className="landing-button secondary" href="/about-you">Edit Seva Preferences</Link>}
         {profile && <Link className="landing-button secondary" href="/my-skills">Edit My Skills</Link>}

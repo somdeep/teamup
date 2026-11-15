@@ -1,25 +1,27 @@
 "use client";
 
 import { useActionState, useEffect, useRef, useState, type FormEvent, type Ref } from "react";
-import { ArrowRight, Check, ChevronDown, Flower2, GraduationCap, HeartHandshake, Phone, UserRound } from "lucide-react";
-import { expertiseGroups } from "../../lib/signup-profile";
+import { ArrowRight, Check, ChevronDown, Flower2, GraduationCap, HeartHandshake, Phone, UserRound, UsersRound } from "lucide-react";
+import { expertiseGroups, isSignupIntent, type SignupRole } from "../../lib/signup-profile";
 import { completeProfile, signUp } from "../auth/actions";
 import { EmailField, PasswordField } from "../auth/auth-form";
 import styles from "./sign-up.module.css";
 
-type RoleChoice = "Teacher" | "Volunteer";
-
-function RolePicker({ initialRole, teacherRef }: { initialRole?: RoleChoice; teacherRef?: Ref<HTMLInputElement> }) {
+function RolePicker({ teacherRef }: { teacherRef?: Ref<HTMLInputElement> }) {
   return (
     <fieldset className={styles.roles}>
       <legend className="sr-only">Choose how you’d like to join</legend>
       <label className={styles.teacher}>
-        <input className="sr-only" name="role" type="radio" value="Teacher" ref={teacherRef} defaultChecked={initialRole === "Teacher"} required />
+        <input className="sr-only" name="role" type="radio" value="Teacher" ref={teacherRef} required />
         <span><UserRound size={23} aria-hidden="true" />Teacher</span>
       </label>
       <label className={styles.volunteer}>
-        <input className="sr-only" name="role" type="radio" value="Volunteer" defaultChecked={initialRole === "Volunteer"} />
+        <input className="sr-only" name="role" type="radio" value="Volunteer" />
         <span><HeartHandshake size={25} aria-hidden="true" />Volunteer</span>
+      </label>
+      <label className={styles.member}>
+        <input className="sr-only" name="role" type="radio" value="Member" defaultChecked />
+        <span><UsersRound size={23} aria-hidden="true" />Member</span>
       </label>
     </fieldset>
   );
@@ -29,14 +31,14 @@ export function AccountSignUpForm({ verifiedProfile }: { verifiedProfile?: { nam
   const [state, submit, pending] = useActionState(verifiedProfile ? completeProfile : signUp, {});
   return (
     <form className={styles.form} action={submit} aria-describedby="account-signup-note">
-      <RolePicker initialRole={verifiedProfile ? undefined : "Volunteer"} />
+      <RolePicker />
       <ProfileFields initialName={verifiedProfile?.name} verifiedEmail={verifiedProfile?.email} />
       {!verifiedProfile && <>
         <PasswordField isNew />
         <p className={styles.fieldHint}>Use at least 12 characters.</p>
       </>}
       <p id="account-signup-note" className={styles.fieldHint}>
-        {!verifiedProfile && "You’ll get a confirmation email. "}Teacher access requires separate approval.
+        {!verifiedProfile && "You’ll get a confirmation email. "}Choose Teacher to request access. Verified roster teachers are approved automatically.
       </p>
       {state.error && <p className={styles.error} role="alert">{state.error}</p>}
       <button className="landing-button primary" disabled={pending}>
@@ -47,7 +49,7 @@ export function AccountSignUpForm({ verifiedProfile }: { verifiedProfile?: { nam
 }
 
 export function SignUpForm() {
-  const [completed, setCompleted] = useState<RoleChoice | null>(null);
+  const [completed, setCompleted] = useState<SignupRole | null>(null);
   const headingRef = useRef<HTMLHeadingElement>(null);
   const roleRef = useRef<HTMLInputElement>(null);
   const [hasReviewed, setHasReviewed] = useState(false);
@@ -70,7 +72,7 @@ export function SignUpForm() {
     }
 
     const role = new FormData(form).get("role");
-    if (role === "Teacher" || role === "Volunteer") {
+    if (isSignupIntent(role)) {
       setCompleted(role);
       setHasReviewed(true);
     }
@@ -81,11 +83,7 @@ export function SignUpForm() {
       <section className={styles.confirmation} aria-labelledby="preview-heading">
         <Check size={29} aria-hidden="true" />
         <h2 id="preview-heading" ref={headingRef} tabIndex={-1}>Profile preview complete</h2>
-        <p>
-          {completed === "Teacher"
-            ? "You chose Teacher. Teacher access will require approval when signup is live."
-            : "You chose Volunteer. City, interests, and availability come next when signup is live."}
-        </p>
+        <p>You chose {completed}.</p>
         <p>Your details weren’t saved.</p>
         <button type="button" className="landing-button secondary" onClick={() => setCompleted(null)}>
           Try again
@@ -96,7 +94,7 @@ export function SignUpForm() {
 
   return (
     <form className={styles.form} onSubmit={submitProfile} autoComplete="off" aria-describedby="signup-preview">
-      <RolePicker initialRole="Teacher" teacherRef={roleRef} />
+      <RolePicker teacherRef={roleRef} />
 
       <ProfileFields preview />
 
