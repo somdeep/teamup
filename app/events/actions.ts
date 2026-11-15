@@ -43,8 +43,8 @@ export async function prepareEventResourceUpload(form: FormData) {
   }
   const path = `${eventId}/${user.id}/${crypto.randomUUID()}.${resourceTypes.get(mimeType)}`;
   const { data, error } = await client.storage.from("event-resources").createSignedUploadUrl(path);
-  if (error || !data?.token) return { error: "We couldn’t prepare the event resource upload." } as const;
-  return { path, token: data.token } as const;
+  if (error || !data?.signedUrl) return { error: "We couldn’t prepare the event resource upload." } as const;
+  return { path, signedUrl: data.signedUrl } as const;
 }
 
 export async function postEventMessage(form: FormData) {

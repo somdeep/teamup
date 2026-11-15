@@ -67,6 +67,9 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
         {access && (access.role === "teacher" || access.teacher_request === "pending") && (
           <Link className="landing-button primary" href="/teacher">Teacher Portal</Link>
         )}
+        {access?.role === "teacher" && <Link className="landing-button secondary" href="/teacher/access-requests">
+          Teacher Access Requests
+        </Link>}
         {access && access.role !== "teacher" && access.teacher_request === "declined" && <p>Your Teacher access request was declined.</p>}
         {access && access.role !== "teacher" && !access.teacher_request && (
           <form action={requestTeacherAccess}><button className="landing-button secondary">Request Teacher Access</button></form>

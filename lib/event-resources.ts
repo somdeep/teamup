@@ -62,6 +62,23 @@ export function readEventResourceMetadata(form: FormData) {
   return { path, fileName: fileName.trim(), mimeType, fileSize } as const;
 }
 
+export async function uploadEventResource(signedUrl: string, file: File) {
+  const body = new FormData();
+  body.append("cacheControl", "3600");
+  body.append("", file);
+  try {
+    const response = await fetch(signedUrl, { method: "PUT", headers: { "x-upsert": "false" }, body });
+    if (response.ok) return null;
+    const payload = await response.json().catch(() => null) as { message?: unknown; error?: unknown } | null;
+    const detail = typeof payload?.message === "string" ? payload.message
+      : typeof payload?.error === "string" ? payload.error
+        : `Storage returned HTTP ${response.status}.`;
+    return detail;
+  } catch {
+    return "The storage service could not be reached.";
+  }
+}
+
 async function withSignedUrl<T extends { storage_path: string | null }>(client: SupabaseClient, resource: T) {
   if (!resource.storage_path) return { ...resource, url: null };
   const { data } = await client.storage.from("event-resources").createSignedUrl(resource.storage_path, 60 * 60);

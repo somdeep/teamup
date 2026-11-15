@@ -3,8 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowRight } from "lucide-react";
-import { readEventResource } from "../../lib/event-resources";
-import { supabaseBrowser } from "../../lib/supabase-browser";
+import { readEventResource, uploadEventResource } from "../../lib/event-resources";
 import { sevaSkills } from "../../lib/signup-profile";
 import { eventTimeZones } from "../../lib/teacher-event";
 import auth from "../sign-up/sign-up.module.css";
@@ -53,11 +52,7 @@ export function TeacherEventForm({ id, priority, parent }: { id: string; priorit
         return;
       }
 
-      const client = supabaseBrowser();
-      const { error: uploadError } = await client.storage.from("event-resources")
-        .uploadToSignedUrl(prepared.path, prepared.token, resource.file, {
-          contentType: resource.file.type, cacheControl: "3600",
-        });
+      const uploadError = await uploadEventResource(prepared.signedUrl, resource.file);
       if (uploadError) {
         router.push(`/events/${created.eventId}?notice=resource-failed#event-resource`);
         return;

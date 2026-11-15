@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { teacherLanding, volunteerLanding } from "../lib/account-access";
 import { readSignupProfile } from "../lib/signup-profile";
+import { readTeacherAccessDecision } from "../lib/teacher-access-requests";
 
 test("teachers land on Teacher Portal after sign-in and final onboarding save", () => {
   const teacher = { role: "teacher", teacher_request: null } as const;
@@ -43,4 +44,19 @@ test("V1 signup accepts Teacher and Volunteer but hides Member and organizer", (
   assert.ok("error" in readSignupProfile(form));
   form.set("role", "organizer");
   assert.ok("error" in readSignupProfile(form));
+});
+
+test("teacher access reviews accept only explicit decisions for a valid account", () => {
+  const form = new FormData();
+  form.set("accountId", "11111111-1111-4111-8111-111111111111");
+  form.set("decision", "approve");
+  assert.deepEqual(readTeacherAccessDecision(form), {
+    accountId: "11111111-1111-4111-8111-111111111111", approved: true,
+  });
+  form.set("decision", "decline");
+  assert.deepEqual(readTeacherAccessDecision(form), {
+    accountId: "11111111-1111-4111-8111-111111111111", approved: false,
+  });
+  form.set("decision", "teacher");
+  assert.equal(readTeacherAccessDecision(form), null);
 });

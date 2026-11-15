@@ -3,8 +3,7 @@
 import { useState } from "react";
 import { Download, FileText, Paperclip, Trash2, Upload } from "lucide-react";
 import type { EventResource } from "../../lib/event-resources";
-import { readEventResource } from "../../lib/event-resources";
-import { supabaseBrowser } from "../../lib/supabase-browser";
+import { readEventResource, uploadEventResource } from "../../lib/event-resources";
 import { prepareEventResourceUpload, removeEventResource, setEventResource } from "./actions";
 import styles from "./event-circle.module.css";
 
@@ -38,13 +37,9 @@ export function EventResourcePanel({ eventId, resource, canManage }: {
         setError(prepared.error ?? "We couldn’t prepare the event resource upload.");
         return;
       }
-      const client = supabaseBrowser();
-      const { error: uploadError } = await client.storage.from("event-resources")
-        .uploadToSignedUrl(prepared.path, prepared.token, selected.file, {
-          contentType: selected.file.type, cacheControl: "3600",
-        });
+      const uploadError = await uploadEventResource(prepared.signedUrl, selected.file);
       if (uploadError) {
-        setError("We couldn’t upload the event resource.");
+        setError(`We couldn’t upload the event resource: ${uploadError}`);
         return;
       }
       const metadata = new FormData();
