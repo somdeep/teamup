@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { accountAccess, accountRoleLabels, teacherLanding } from "../../lib/account-access";
-import { accountProfile } from "../../lib/account-profile";
+import { accountAccess, accountRoleLabels, teacherLanding, volunteerLanding } from "../../lib/account-access";
+import { accountProfile, editableAccountProfile } from "../../lib/account-profile";
 import { sevaAvailabilityProfile } from "../../lib/seva-profile";
 import { portalNotifications } from "../../lib/portal-notifications";
 import { isLive, supabase } from "../../lib/supabase";
@@ -30,9 +30,12 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
   }
 
   const { notice, view } = await searchParams;
+  const { data: editableProfile } = profile ? await editableAccountProfile(client) : { data: null };
   const { data: access, error: accessError } = profile ? await accountAccess(client) : { data: null, error: null };
   const landingPage = teacherLanding(access, view, notice);
   if (landingPage) redirect(landingPage);
+  const volunteerPage = volunteerLanding(access, view, notice);
+  if (volunteerPage) redirect(volunteerPage);
   const notifications = await portalNotifications(client, data.user.id, access);
   return (
     <AuthShell title="Your Account" headerActions={<PortalHeaderActions notificationsHref={notifications.href}
@@ -43,6 +46,7 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
         {profile ? <>
           {access && <p>Role · {accountRoleLabels[access.role]}</p>}
           {profile.contact_phone && <p>Phone · {profile.contact_phone}</p>}
+          {editableProfile?.city && <p>Location · {editableProfile.city}</p>}
           {profile.last_course && <p>Last course · {profile.last_course}</p>}
           {profile.courses.length > 0 && <p>Courses · {profile.courses.join(", ")}</p>}
           {profile.skills.length > 0 && <p>Skills · {profile.skills.join(", ")}</p>}
@@ -51,6 +55,7 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
         {notice === "seva-saved" && <p role="status">Your seva preferences were saved.</p>}
         {notice === "skills-saved" && <p role="status">Your skills and learning interests were saved.</p>}
         {notice === "availability-saved" && <p role="status">Your profile was saved.</p>}
+        {notice === "profile-details-saved" && <p role="status">Your account profile was updated.</p>}
         {notice === "teacher-access" && <p role="status">Request Teacher access to use event and invitation tools.</p>}
         {notice === "teacher-request-failed" && <p role="alert">We couldn’t send your Teacher access request. Please try again.</p>}
         {accessError && <p role="alert">We couldn’t check your account role. Refresh to try again.</p>}
@@ -61,7 +66,8 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
         {access && access.role !== "teacher" && !access.teacher_request && (
           <form action={requestTeacherAccess}><button className="landing-button secondary">Request Teacher Access</button></form>
         )}
-        {profile && <Link className="landing-button secondary" href="/invitations">Invitations</Link>}
+        {profile && access?.role === "volunteer" && <Link className="landing-button primary" href="/volunteer">Volunteer Portal</Link>}
+        {profile && <Link className="landing-button secondary" href="/account/profile">Edit Profile</Link>}
         {profile && <Link className="landing-button secondary" href="/about-you">Edit Seva Preferences</Link>}
         {profile && <Link className="landing-button secondary" href="/my-skills">Edit My Skills</Link>}
         {profile && <Link className="landing-button secondary" href="/my-availability">Edit Availability</Link>}

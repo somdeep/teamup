@@ -1,0 +1,4 @@
+.field input, .field select {
+  display: block; width: 100%; min-height: 1.7rem; color: #073d49; background: transparent; outline: none;
+}
+.field select { margin-top: .15rem; cursor: pointer; }

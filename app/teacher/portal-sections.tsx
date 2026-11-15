@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { ArrowRight, CalendarDays, CalendarPlus, ChevronRight, Inbox, MapPin, UsersRound, Zap } from "lucide-react";
 import { formatEventTime } from "../../lib/teacher-event";
-import { eventRoles, type DirectoryVolunteer, type MatchedVolunteer, type PortalEvent, type PortalInvitation } from "../../lib/teacher-data";
+import { canCancelInvitation, eventRoles, type DirectoryVolunteer, type MatchedVolunteer, type PortalEvent, type PortalInvitation } from "../../lib/teacher-data";
 import { volunteerProfileHref } from "../../lib/volunteer-directory";
 import { cancelInvitation, inviteVolunteer } from "./actions";
 import styles from "./teacher.module.css";
@@ -55,10 +55,10 @@ export function InvitationList({ requests }: { requests: { event: PortalEvent; i
         {invite.people?.full_name ?? "Volunteer"}
       </Link><small>{event.title}</small></span>
       <span className={styles.status} data-status={invite.status}>{invite.status}</span>
-      {invite.status === "pending" && <form action={cancelInvitation}>
+      {canCancelInvitation(invite.status) && <form action={cancelInvitation}>
         <input type="hidden" name="eventId" value={event.id} />
         <input type="hidden" name="invitationId" value={invite.id} />
-        <button className={styles.cancelButton} aria-label={`Cancel request to ${invite.people?.full_name ?? "volunteer"}`}>Cancel</button>
+        <button className={styles.cancelButton} aria-label={`Cancel ${invite.status} request to ${invite.people?.full_name ?? "volunteer"}`}>Cancel</button>
       </form>}
     </li>
   ))}</ul>;

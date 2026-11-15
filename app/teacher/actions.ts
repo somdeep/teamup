@@ -53,9 +53,9 @@ export async function cancelInvitation(form: FormData) {
   const invitationId = form.get("invitationId");
   if (!isUuid(eventId) || !isUuid(invitationId)) redirect("/teacher?notice=cancel-failed");
 
-  const { data, error } = await client.from("invitations").delete()
-    .eq("id", invitationId).eq("event_id", eventId).eq("status", "pending")
-    .select("id").maybeSingle();
+  const { data, error } = await client.rpc("teamup_cancel_invitation", {
+    p_event_id: eventId, p_invitation_id: invitationId,
+  });
   const notice = !error && data ? "request-cancelled" : "cancel-failed";
   redirect(`/events/${eventId}?notice=${notice}`);
 }

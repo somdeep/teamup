@@ -7,10 +7,21 @@ export type AccountAccess = {
   teacher_request: "pending" | "approved" | "declined" | null;
 };
 
+function profileSaved(notice?: string) {
+  return notice === "availability-saved" || notice === "seva-saved";
+}
+
 export function teacherLanding(access: AccountAccess | null, view?: string, notice?: string) {
-  if (view === "settings" || (notice && notice !== "availability-saved")) return null;
+  const saved = profileSaved(notice);
+  if (view === "settings" || (notice && !saved)) return null;
   if (access?.role !== "teacher" && access?.teacher_request !== "pending") return null;
-  return notice === "availability-saved" ? "/teacher?notice=profile-saved" : "/teacher";
+  return saved ? "/teacher?notice=profile-saved" : "/teacher";
+}
+
+export function volunteerLanding(access: AccountAccess | null, view?: string, notice?: string) {
+  const saved = profileSaved(notice);
+  if (view === "settings" || (notice && !saved) || access?.role !== "volunteer") return null;
+  return saved ? "/volunteer?notice=profile-saved" : "/volunteer";
 }
 
 export async function accountAccess(client: Awaited<ReturnType<typeof supabase>>) {

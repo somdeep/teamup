@@ -6,7 +6,7 @@ export async function sevaProfile(client: Awaited<ReturnType<typeof supabase>>, 
   photo?: string;
   removePhoto: boolean;
 }) {
-  const { data, error } = await client.rpc("teamup_seva_profile", input ? {
+  const { data, error } = await client.rpc(input ? "teamup_complete_seva_profile" : "teamup_seva_profile", input ? {
     preferences: input.preferences,
     ...(input.photo ? { photo_base64: input.photo } : {}),
     remove_photo: input.removePhoto,

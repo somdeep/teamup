@@ -40,6 +40,7 @@ function isProfileName(value: unknown): value is string {
 export type SignupProfileInput = {
   display_name: string;
   signup_intent: SignupRole;
+  location: string;
   contact_phone?: string;
   last_course?: string;
   signup_expertise?: string[];
@@ -49,12 +50,14 @@ export function readSignupProfile(form: FormData): { profile: SignupProfileInput
   const name = readText(form, "fullName").trim();
   const intent = readText(form, "role");
   const phone = readText(form, "phone").trim();
+  const location = readText(form, "location").trim();
   const lastCourse = readText(form, "lastCourse").trim();
   const expertise = [...new Set(form.getAll("expertise"))];
 
   if (!isProfileName(name) || !isJoinIntent(intent)) {
     return { error: "Enter a valid name and signup preference." } as const;
   }
+  if (!location || location.length > 100) return { error: "Enter your city or area." } as const;
   if (phone.length > 32) return { error: "Enter a phone number with at most 32 characters." } as const;
   if (lastCourse.length > 120) return { error: "Enter a course name with at most 120 characters." } as const;
 
@@ -65,6 +68,7 @@ export function readSignupProfile(form: FormData): { profile: SignupProfileInput
     profile: {
       display_name: name,
       signup_intent: intent,
+      location,
       ...(phone ? { contact_phone: phone } : {}),
       ...(lastCourse ? { last_course: lastCourse } : {}),
       ...(selections.length ? { signup_expertise: selections } : {}),

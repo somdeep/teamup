@@ -2,8 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
-  CalendarDays, CalendarHeart, ChevronDown, ChevronRight, ClipboardCheck, Clock3, MapPin, Plus, Send,
-  UsersRound,
+  CalendarDays, CalendarHeart, ChevronDown, ChevronRight, ClipboardCheck, Clock3, MapPin, Plus, UsersRound,
 } from "lucide-react";
 import { eventCircle, eventMessages } from "../../../lib/event-circle";
 import { portalNotifications } from "../../../lib/portal-notifications";
@@ -89,6 +88,10 @@ export default async function EventCirclePage({
         <span><UsersRound aria-hidden="true" /><strong>Volunteers</strong></span>
         <span><strong>{event.confirmed_count}</strong> Confirmed</span>
         <span className={styles.spots}>{spotsLeft} {spotsLeft === 1 ? "Spot" : "Spots"} Left</span>
+        {event.can_manage && <Link className={styles.inviteVolunteers} href={`/teacher?view=find&forEvent=${event.id}`}
+          aria-label={`Invite volunteers to ${event.title}`} title="Invite volunteers">
+          <Plus aria-hidden="true" />
+        </Link>}
       </section>
 
       {!event.parent_event_id && (event.can_manage || event.related_events.length > 0) && <div className={styles.relatedWrap}>
@@ -113,10 +116,6 @@ export default async function EventCirclePage({
           <Plus aria-hidden="true" />
         </Link>}
       </div>}
-
-      {event.can_manage && <nav className={styles.circleLinks} aria-label="Event management">
-        <Link href={`/teacher?view=find&forEvent=${event.id}`}><Send aria-hidden="true" /><strong>Invite Volunteers</strong><ChevronRight aria-hidden="true" /></Link>
-      </nav>}
 
       {event.can_manage && <details className={styles.collapsible} id="applications">
         <summary>

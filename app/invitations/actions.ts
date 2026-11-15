@@ -12,3 +12,11 @@ export async function replyToInvitation(form: FormData) {
   const { data, error } = await client.rpc("teamup_reply_to_invitation", { p_invitation_id: id, p_response: response });
   redirect(`/invitations?notice=${!error && data ? "saved" : "reply-failed"}`);
 }
+
+export async function cancelAcceptedInvitation(form: FormData) {
+  const { client } = await portalSession();
+  const id = form.get("invitationId");
+  if (!isUuid(id)) redirect("/invitations?notice=cancel-failed");
+  const { data, error } = await client.rpc("teamup_cancel_accepted_invitation", { p_invitation_id: id });
+  redirect(`/invitations?notice=${!error && data ? "cancelled" : "cancel-failed"}`);
+}

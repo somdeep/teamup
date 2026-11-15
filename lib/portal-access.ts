@@ -23,3 +23,9 @@ export async function teacherSession() {
   if (session.access.role !== "teacher") redirect("/account?notice=teacher-access");
   return session;
 }
+
+export async function volunteerSession() {
+  const session = await portalSession();
+  if (session.access.role !== "volunteer") redirect("/account");
+  return session;
+}

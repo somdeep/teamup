@@ -27,6 +27,10 @@ export type VolunteerDirectoryProfile = DirectoryVolunteer & {
 };
 export type MatchedVolunteer = DirectoryVolunteer & { score: number; reasons: string[]; invitation_status: InvitationStatus | null };
 
+export function canCancelInvitation(status: InvitationStatus) {
+  return status === "pending" || status === "accepted";
+}
+
 export function eventRoles(event: PortalEvent) {
   return event.roles.map(role => eventRoleLabels[role]).join(" · ");
 }

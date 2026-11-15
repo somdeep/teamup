@@ -7,7 +7,7 @@ import { formatEventTime, isOpenEvent } from "../../lib/teacher-event";
 import { AuthShell } from "../auth/auth-shell";
 import { PortalHeaderActions } from "../auth/portal-header-actions";
 import styles from "../teacher/teacher.module.css";
-import { replyToInvitation } from "./actions";
+import { cancelAcceptedInvitation, replyToInvitation } from "./actions";
 
 export const metadata: Metadata = { title: "Invitations | TeamUp", robots: { index: false } };
 
@@ -26,6 +26,8 @@ export default async function InvitationsPage({ searchParams }: { searchParams: 
     headerActions={<PortalHeaderActions notificationsHref="/invitations" pendingCount={pending} notificationLabel="Invitations" />}>
     <div className={styles.stack}>
       {notice === "saved" && <p role="status" className={styles.notice}>Your reply was saved.</p>}
+      {notice === "cancelled" && <p role="status" className={styles.notice}>Your commitment was cancelled.</p>}
+      {notice === "cancel-failed" && <p role="alert" className={styles.notice}>We couldn’t cancel that commitment. The event may have started or changed.</p>}
       {notice === "reply-failed" && <p role="alert" className={styles.notice}>We couldn’t save your reply. The invitation may be closed or already answered.</p>}
       {error && <p role="alert" className={styles.notice}>We couldn’t load your invitations. Refresh to try again.</p>}
       {!error && invitations.length === 0 && <p className={styles.empty}>Your seva invitations will appear here.</p>}
@@ -43,7 +45,13 @@ export default async function InvitationsPage({ searchParams }: { searchParams: 
               <button className={styles.smallButton} name="response" value="declined">Decline</button>
             </form>
           )}
-          {item.status === "accepted" && item.events && <Link className={styles.textLink} href={`/events/${item.events.id}`}>Open event circle</Link>}
+          {item.status === "accepted" && item.events && <div className={styles.responseForm}>
+            <Link className={styles.textLink} href={`/events/${item.events.id}`}>Open event circle</Link>
+            {isOpenEvent(item.events) && <form action={cancelAcceptedInvitation}>
+              <input type="hidden" name="invitationId" value={item.id} />
+              <button className={styles.cancelButton}>Cancel commitment</button>
+            </form>}
+          </div>}
         </li>
       ))}</ul>}
     </div>

@@ -1,0 +1,122 @@
+.pageStack { display: grid; gap: clamp(1.2rem, 4vw, 2rem); min-inline-size: 0; }
+
+.greeting {
+  display: grid;
+  justify-items: start;
+  margin-top: .25rem;
+  color: #073d49;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(2.6rem, 10vw, 4.7rem);
+  font-weight: 700;
+  letter-spacing: -.045em;
+  text-align: left;
+}
+.greeting i {
+  width: min(70%, 16rem);
+  height: 1rem;
+  margin: -.2rem 0 0 1.2rem;
+  border-top: .28rem solid #efad00;
+  border-radius: 50%;
+  transform: rotate(-2deg);
+}
+
+.tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(.45rem, 2vw, 1rem); }
+.tile {
+  display: grid;
+  min-width: 0;
+  min-height: clamp(8rem, 29vw, 11.5rem);
+  align-content: center;
+  justify-items: center;
+  gap: .65rem;
+  padding: .65rem .35rem;
+  border: 1.8px solid #20a7ad;
+  border-radius: 1.35rem;
+  background: #ffffffed;
+  box-shadow: 0 .45rem 1rem #08767e12;
+  color: #0a2538;
+  font-size: clamp(.83rem, 3.35vw, 1.24rem);
+  font-weight: 850;
+  line-height: 1.06;
+  text-align: center;
+}
+.tile svg { width: clamp(2.9rem, 11vw, 4.7rem); height: auto; color: #ed6500; }
+.tile[data-tone="gold"] svg { color: #e4a900; }
+.tile[data-tone="green"] svg { color: #4caa08; }
+.tile:hover { border-color: #08767e; background: #effafa; transform: translateY(-1px); }
+.tile:focus-visible, .eventRow:focus-visible, .opportunityCard a:focus-visible,
+.responseActions button:focus-visible, .commitmentActions button:focus-visible {
+  outline: 3px solid #005a65;
+  outline-offset: 3px;
+}
+
+.upcoming { display: grid; gap: .85rem; }
+.upcoming > h2 { display: flex; align-items: center; gap: .85rem; color: #073d49; font-size: clamp(1.35rem, 5.5vw, 2rem); font-weight: 850; text-align: center; }
+.upcoming > h2::before, .upcoming > h2::after { height: 3px; flex: 1; border-radius: 2px; background: #eeb000; content: ""; }
+.upcoming > h2 span { flex: none; }
+
+.eventStack, .cardStack { display: grid; gap: .75rem; }
+.eventRow {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: .8rem;
+  min-height: 5.2rem;
+  padding: .65rem .9rem;
+  border: 1.7px solid #20a7ad;
+  border-radius: 1.15rem;
+  background: #fff;
+  box-shadow: 0 .35rem .8rem #08767e10;
+}
+.eventRow:hover { background: #f0fbfa; }
+.eventIcon { display: grid; width: 3.5rem; place-items: center; color: #ed6500; }
+.eventIcon svg { width: 2.75rem; height: 2.75rem; }
+.eventCopy { display: grid; min-width: 0; gap: .16rem; }
+.eventCopy strong { color: #0a2538; font-size: clamp(1rem, 4.1vw, 1.35rem); font-weight: 850; line-height: 1.1; }
+.eventCopy small { display: flex; min-width: 0; align-items: center; gap: .32rem; color: #263f4b; font-size: clamp(.76rem, 3.1vw, .93rem); }
+.eventCopy small svg { width: 1rem; flex: none; }
+.eventRow > svg { color: #0a2538; }
+
+.notice, .empty, .resources { border: 1.5px solid #78c7ca; border-radius: 1rem; background: #effafa; padding: 1rem; color: #214d53; }
+.empty { text-align: center; }
+.resources { display: grid; gap: .55rem; background: #fff; }
+.resources h2 { color: #0a2538; font-size: 1.3rem; font-weight: 850; }
+
+.opportunityCard {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: .8rem;
+  padding: 1rem;
+  border: 1.7px solid #20a7ad;
+  border-radius: 1.2rem;
+  background: #fff;
+}
+.cardIcon { display: grid; width: 2.8rem; height: 2.8rem; place-items: center; border-radius: 50%; background: #fff2df; color: #ed6500; }
+.cardCopy { display: grid; min-width: 0; gap: .25rem; }
+.cardCopy h2 { color: #0a2538; font-size: 1.15rem; font-weight: 850; }
+.cardCopy p { color: #36515a; font-size: .9rem; }
+.responseActions, .commitmentActions { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: center; gap: .55rem; }
+.responseActions button, .commitmentActions button, .commitmentActions a {
+  min-height: 2.55rem;
+  border-radius: 999px;
+  padding: .45rem .9rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+.accept { border: 1.5px solid #d64c00; background: linear-gradient(135deg, #f47a00, #e94d00); color: #fff; }
+.decline, .commitmentActions button { border: 1.5px solid #147e87; background: #fff; color: #096773; }
+.commitmentActions a { display: inline-flex; align-items: center; border: 1.5px solid #147e87; background: #eaf8f7; color: #096773; }
+.commitmentActions button { color: #8b3212; border-color: #b65a36; }
+
+.historyRow { display: flex; align-items: center; gap: .8rem; padding: .85rem; border: 1.5px solid #78c7ca; border-radius: 1rem; background: #fff; }
+.historyRow > span:last-child { display: grid; gap: .2rem; }
+.historyRow strong { color: #0a2538; font-weight: 850; }
+.historyRow small { color: #486168; }
+
+@media (max-width: 390px) {
+  .tiles { gap: .35rem; }
+  .tile { min-height: 7.35rem; border-radius: 1.05rem; padding-inline: .2rem; font-size: .76rem; }
+  .upcoming > h2 { gap: .45rem; }
+  .eventRow { gap: .5rem; padding-inline: .6rem; }
+  .eventIcon { width: 2.7rem; }
+  .eventIcon svg { width: 2.25rem; height: 2.25rem; }
+}

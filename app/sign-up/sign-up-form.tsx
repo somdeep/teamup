@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useEffect, useRef, useState, type FormEvent, type Ref } from "react";
-import { ArrowRight, Check, ChevronDown, Flower2, GraduationCap, HeartHandshake, Phone, UserRound } from "lucide-react";
+import { ArrowRight, Check, ChevronDown, Flower2, GraduationCap, HeartHandshake, MapPin, Phone, UserRound } from "lucide-react";
 import { expertiseGroups, isJoinIntent, type SignupRole } from "../../lib/signup-profile";
 import { completeProfile, signUp } from "../auth/actions";
 import { EmailField, PasswordField } from "../auth/auth-form";
@@ -125,6 +125,14 @@ function ProfileFields({ preview = false, initialName, verifiedEmail }: {
         <span>
           <span className={styles.fieldName}>Phone <small>(Optional)</small></span>
           <input name={preview ? undefined : "phone"} type="tel" autoComplete={preview ? "off" : "tel"} maxLength={32} />
+        </span>
+      </label>
+      <label className={styles.field}>
+        <MapPin size={26} aria-hidden="true" />
+        <span>
+          <span className={styles.fieldName}>Location <small>(City or area)</small><span aria-hidden="true" className={styles.required}>*</span></span>
+          <input name={preview ? undefined : "location"} type="text" autoComplete={preview ? "off" : "address-level2"}
+            required maxLength={100} placeholder="e.g. Toronto, ON" />
         </span>
       </label>
       <label className={styles.field}>
