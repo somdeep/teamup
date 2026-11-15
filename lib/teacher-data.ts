@@ -1,5 +1,5 @@
 import type { teacherSession } from "./portal-access";
-import { sevaSkills } from "./signup-profile";
+import type { DirectoryFilter, VolunteerAvailability } from "./volunteer-directory";
 
 type TeacherSession = Awaited<ReturnType<typeof teacherSession>>;
 
@@ -17,6 +17,7 @@ export type PortalEvent = {
   roles: (keyof typeof eventRoleLabels)[]; can_manage: boolean;
 };
 export type DirectoryVolunteer = { person_id: string; full_name: string; city: string | null; skills: string[]; skills_simulated?: boolean; emergency_seva?: boolean };
+export type VolunteerDirectoryProfile = DirectoryVolunteer & { interests: string[]; availability_status: VolunteerAvailability; has_photo: boolean };
 export type MatchedVolunteer = DirectoryVolunteer & { score: number; reasons: string[]; invitation_status: InvitationStatus | null };
 
 export function eventRoles(event: PortalEvent) {
@@ -29,18 +30,29 @@ export async function teacherEvents({ client }: TeacherSession, eventId?: string
   return (data ?? []) as PortalEvent[];
 }
 
-export async function teacherDirectory({ client, profile }: TeacherSession, filter: { name: string; city: string; skill: string; page: number }) {
-  const pageSize = 24;
+const directoryColumns = "person_id,full_name,city,skills,interests,skills_simulated,emergency_seva,availability_status,has_photo";
+
+export async function teacherDirectory({ client, profile }: TeacherSession, filter: DirectoryFilter) {
+  const pageSize = 12;
   const search = (value: string) => `%${value.slice(0, 80).replace(/[\\%_*]/g, "\\$&")}%`;
-  let query = client.from("volunteer_directory").select("person_id,full_name,city,skills,skills_simulated,emergency_seva", { count: "exact" });
-  if (filter.name.trim()) query = query.ilike("full_name", search(filter.name.trim()));
-  if (filter.city.trim()) query = query.ilike("city", search(filter.city.trim()));
-  if (sevaSkills.some(skill => skill === filter.skill)) query = query.contains("skills", [filter.skill]);
+  let query = client.from("volunteer_directory").select(directoryColumns);
+  if (filter.q) query = query.ilike("search_text", search(filter.q));
+  if (filter.city) query = query.ilike("city", search(filter.city));
+  if (filter.skill) query = query.contains("skills", [filter.skill]);
+  if (filter.availability) query = query.eq("availability_status", filter.availability);
   if (profile.person_id) query = query.neq("person_id", profile.person_id);
   const start = (filter.page - 1) * pageSize;
-  const { data, error, count } = await query.order("full_name").order("person_id").range(start, start + pageSize - 1);
+  const { data, error } = await query.order("full_name").order("person_id").range(start, start + pageSize);
   if (error) throw new Error("Could not load the volunteer directory.");
-  return { volunteers: (data ?? []) as DirectoryVolunteer[], hasNext: (count ?? 0) > start + pageSize };
+  return { volunteers: (data ?? []).slice(0, pageSize) as VolunteerDirectoryProfile[], hasNext: (data?.length ?? 0) > pageSize };
+}
+
+export async function teacherVolunteer({ client, profile }: TeacherSession, personId: string) {
+  if (personId === profile.person_id) return null;
+  const { data, error } = await client.from("volunteer_directory").select(directoryColumns)
+    .eq("person_id", personId).maybeSingle();
+  if (error) throw new Error("Could not load the volunteer profile.");
+  return data as VolunteerDirectoryProfile | null;
 }
 
 export async function teacherMatches({ client }: TeacherSession, eventId: string) {

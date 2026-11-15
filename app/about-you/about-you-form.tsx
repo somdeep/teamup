@@ -112,6 +112,7 @@ export function AboutYouForm({ profile }: { profile: SevaProfile }) {
             {photoUrl ? <Image src={photoUrl} alt="" width={44} height={44} unoptimized /> : <UserRound size={28} />}
           </span>
         </label>
+        <p className={styles.hint}>If you’re listed in the volunteer directory, teachers can see your photo.</p>
         {preparing && <p className={styles.hint} role="status">Preparing photo…</p>}
         {photoError && <p className={signup.error} role="alert">{photoError}</p>}
         {photoUrl && <button type="button" className={styles.textButton} onClick={() => {

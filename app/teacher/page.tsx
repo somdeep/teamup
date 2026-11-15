@@ -4,13 +4,14 @@ import Link from "next/link";
 import { CalendarDays, MapPin, UsersRound } from "lucide-react";
 import { portalSession } from "../../lib/portal-access";
 import { sevaAvailabilityProfile } from "../../lib/seva-profile";
-import { sevaSkills } from "../../lib/signup-profile";
-import { eventRoles, teacherDirectory, teacherEvents, teacherMatches } from "../../lib/teacher-data";
+import { eventRoles, teacherDirectory, teacherEvents, teacherMatches, teacherVolunteer } from "../../lib/teacher-data";
 import { formatEventTime, isOpenEvent, isUuid } from "../../lib/teacher-event";
+import { readDirectoryFilter, volunteerDirectoryHref } from "../../lib/volunteer-directory";
 import { AuthShell } from "../auth/auth-shell";
 import { redirect } from "next/navigation";
 import { TeacherEventForm } from "./event-form";
 import { EventList, InvitationList, TeacherTiles, VolunteerCard } from "./portal-sections";
+import { DirectoryHeader, VolunteerDirectory, VolunteerDirectoryDetails } from "./volunteer-directory";
 import styles from "./teacher.module.css";
 
 export const metadata: Metadata = { title: "Teacher Portal | TeamUp", robots: { index: false } };
@@ -97,34 +98,23 @@ export default async function TeacherPage({ searchParams }: { searchParams: Prom
   const requests = events.flatMap(event => event.invitations.map(invite => ({ event, invite })));
 
   if (view === "find") {
-    const page = Math.min(1000, Math.max(1, Number.parseInt(read("page"), 10) || 1));
-    const filter = { name: read("name").slice(0, 80), city: read("city").slice(0, 80), skill: read("skill"), page };
+    const filter = readDirectoryFilter(params);
     const inviteEvents = upcoming.filter(event => event.can_manage);
-    const forEvent = inviteEvents.find(event => event.id === read("forEvent"));
+    const forEvent = inviteEvents.find(event => event.id === filter.forEvent);
+    filter.forEvent = forEvent?.id ?? "";
+    const headerActions = <DirectoryHeader hasRequests={requests.some(item => item.invite.status === "pending")} />;
+    const personId = read("person");
+    if (personId) {
+      const volunteer = isUuid(personId) ? await teacherVolunteer(session, personId) : null;
+      return <AuthShell wide title={volunteer?.full_name ?? "Profile unavailable"}
+        backHref={volunteerDirectoryHref(filter)} backLabel="Back to Find Volunteers" headerActions={headerActions}>
+        {volunteer ? <VolunteerDirectoryDetails volunteer={volunteer} event={forEvent} />
+          : <p className={styles.empty}>This volunteer profile is unavailable.</p>}
+      </AuthShell>;
+    }
     const { volunteers, hasNext } = await teacherDirectory(session, filter);
-    const pageLink = (number: number) => `/teacher?${new URLSearchParams({ view, name: filter.name, city: filter.city, skill: filter.skill, page: String(number), forEvent: forEvent?.id ?? "" })}`;
-    return <AuthShell wide title={title} backHref="/teacher" backLabel="Back to Teacher Portal">
-      <div className={styles.stack}>
-        <form className={styles.stack} action="/teacher">
-          <input type="hidden" name="view" value="find" />
-          <div className={styles.two}>
-            <label className={styles.field}>Name<input name="name" maxLength={80} defaultValue={filter.name} placeholder="Search by name" /></label>
-            <label className={styles.field}>City<input name="city" maxLength={80} defaultValue={filter.city} placeholder="Search by city" /></label>
-            <label className={styles.field}>Skill<select name="skill" defaultValue={filter.skill}><option value="">All skills</option>
-              {sevaSkills.map(skill => <option key={skill}>{skill}</option>)}</select></label>
-            <label className={styles.field}>Invite to an event<select name="forEvent" defaultValue={forEvent?.id ?? ""}><option value="">Choose an event</option>
-              {inviteEvents.map(event => <option key={event.id} value={event.id}>{event.title}</option>)}</select></label>
-          </div>
-          <button className="landing-button primary">Search Volunteers</button>
-        </form>
-        {volunteers.length ? <ul className={styles.stack}>{volunteers.map(volunteer => (
-          <VolunteerCard key={volunteer.person_id} volunteer={volunteer} event={forEvent} />
-        ))}</ul> : <p className={styles.empty}>No volunteers match these filters.</p>}
-        {(page > 1 || hasNext) && <nav className={styles.sectionHeader} aria-label="Volunteer results pages">
-          {page > 1 && <Link className={styles.textLink} href={pageLink(page - 1)}>Previous</Link>}
-          {hasNext && <Link className={styles.textLink} href={pageLink(page + 1)}>Next</Link>}
-        </nav>}
-      </div>
+    return <AuthShell wide title={title} backHref="/teacher" backLabel="Back to Teacher Portal" headerActions={headerActions}>
+      <VolunteerDirectory filter={filter} events={inviteEvents} event={forEvent} volunteers={volunteers} hasNext={hasNext} />
     </AuthShell>;
   }
 

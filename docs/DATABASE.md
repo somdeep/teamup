@@ -42,7 +42,7 @@ The folder also had a sheet pointing to Art of Living's live course API. The she
 | `invitations` | Who's been invited to what, and their answer | Filled by teachers coordinating an event |
 | `courses` | Course names for the sign-up form | 16 |
 
-For search, organizers go through two helpers rather than the tables. `volunteer_directory` lists volunteers with their city, skills, and last course, but no contact details. `match_volunteers` takes an event and returns the best-fit volunteers, each with a short reason like "Skills: Photography" or "Free on Sundays at this time."
+For search, teachers use `volunteer_directory` to find volunteers by name, skill, learning interest, city, and general availability. After the [directory migration](../supabase/migrations/20261115033807_volunteer_directory_filters.sql), approved teachers can also view photos uploaded by people in the directory. The directory search keeps contact details out of its results. For a specific event, `match_volunteers` checks the event time and returns the best-fit volunteers with short reasons.
 
 The ranking is simple and rule-based. A volunteer has to be free at the event's time, and then skills count for 50%, availability for 35%, and living in the same city for 15%.
 

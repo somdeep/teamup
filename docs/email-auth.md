@@ -39,7 +39,7 @@ Supabase Auth manages verification. `public.profiles.id` references the Auth use
 
 Signed-in users can read their account profile through RLS. Account linking and signup writes use the caller’s verified email. Selecting Teacher requests access. A verified email linked to a trusted teacher record receives access automatically. New claims stay pending for review. See [Account roles and Teacher access](DATABASE.md#account-roles-and-teacher-access).
 
-After the basic profile, **Tell Us About Yourself** collects skills, learning interests, general availability, specific dates, and emergency seva preferences. Apply the [seva preferences migration](../supabase/migrations/20261114235617_seva_preferences.sql) to enable this step. Volunteers can update their preferences from **Your Account**. The optional photo is visible to the signed-in owner. Event matching uses scheduled time slots.
+After the basic profile, **Tell Us About Yourself** collects skills, learning interests, general availability, specific dates, and emergency seva preferences. Apply the [seva preferences migration](../supabase/migrations/20261114235617_seva_preferences.sql) to enable this step. Volunteers can update their preferences from **Your Account**. Approved teachers can see uploaded photos for volunteers in the directory. Event matching uses scheduled time slots.
 
 **My Skills** follows the preferences step. Volunteers can review the skills they offer, choose additional catalog skills, and save learning interests. Apply the [skills review migration](../supabase/migrations/20261115000648_skills_review.sql) to enable this step. It is also available from **Your Account → Edit My Skills**.
 

@@ -1,0 +1,139 @@
+import Image from "next/image";
+import Link from "next/link";
+import {
+  Bell, CalendarDays, Camera, Car, ChefHat, ChevronRight, ClipboardCheck, HeartHandshake,
+  Laptop, MapPin, Megaphone, Music2, Palette, UserPlus, UserRound, UsersRound, Wrench,
+  type LucideIcon,
+} from "lucide-react";
+import type { PortalEvent, VolunteerDirectoryProfile } from "../../lib/teacher-data";
+import { directoryAvailability, volunteerDirectoryHref, type DirectoryFilter } from "../../lib/volunteer-directory";
+import { inviteVolunteer } from "./actions";
+import { DirectoryFilters } from "./directory-filters";
+import styles from "./directory.module.css";
+
+const skillIcons: Record<string, LucideIcon> = {
+  "Community Outreach": Megaphone, Decor: Palette, Driving: Car, "Greeting & hospitality": HeartHandshake,
+  "Kitchen seva": ChefHat, "Music & bhajans": Music2, Photography: Camera, "Registration desk": ClipboardCheck,
+  "Setup & logistics": Wrench, "Social media": Megaphone, "Tech & AV": Laptop,
+};
+
+export function DirectoryHeader({ hasRequests }: { hasRequests: boolean }) {
+  return (
+    <>
+      <Link className={styles.shortcut} href="/teacher?view=requests" aria-label={hasRequests ? "Requests, pending responses" : "Requests"}>
+        <Bell aria-hidden="true" size={22} />
+        {hasRequests && <span className={styles.notification} />}
+      </Link>
+      <Link className={`${styles.shortcut} ${styles.accountIcon}`} href="/account?view=settings" aria-label="Your Account">
+        <UserRound aria-hidden="true" size={22} />
+      </Link>
+    </>
+  );
+}
+
+function Avatar({ volunteer, large = false }: { volunteer: VolunteerDirectoryProfile; large?: boolean }) {
+  const words = volunteer.full_name.trim().split(/\s+/);
+  const initials = [words[0], words.length > 1 ? words.at(-1) : ""]
+    .map(word => Array.from(word || "")[0] ?? "").join("").toLocaleUpperCase();
+  const tone = (volunteer.full_name.codePointAt(0) ?? 0) % 3;
+  return <span className={large ? `${styles.avatar} ${styles.largeAvatar}` : styles.avatar} data-tone={tone} aria-hidden="true">
+    {initials || <UserRound size={28} />}
+    {volunteer.has_photo && <Image src={`/teacher/volunteers/${volunteer.person_id}/photo`} alt=""
+      width={large ? 144 : 112} height={large ? 144 : 112} unoptimized />}
+  </span>;
+}
+
+function AvailabilityBadge({ volunteer }: { volunteer: VolunteerDirectoryProfile }) {
+  return <span className={styles.availability} data-status={volunteer.availability_status}>
+    {directoryAvailability[volunteer.availability_status]}
+  </span>;
+}
+
+function SkillList({ skills }: { skills: string[] }) {
+  if (!skills.length) return null;
+  return <ul className={styles.skillList} aria-label="Skills">
+    {skills.map(skill => {
+      const Icon = Object.hasOwn(skillIcons, skill) ? skillIcons[skill] : UsersRound;
+      return <li key={skill}><Icon aria-hidden="true" size={19} /> {skill}</li>;
+    })}
+  </ul>;
+}
+
+function InviteButton({ volunteer, event }: { volunteer: VolunteerDirectoryProfile; event?: PortalEvent }) {
+  if (!event) return null;
+  const invitation = event.invitations.find(item => item.person_id === volunteer.person_id);
+  if (invitation) return <span className={styles.inviteStatus}>Invitation {invitation.status}</span>;
+  return <form action={inviteVolunteer}>
+    <input type="hidden" name="eventId" value={event.id} />
+    <input type="hidden" name="personId" value={volunteer.person_id} />
+    <button className={styles.invite} aria-label={`Invite ${volunteer.full_name}`}>
+      <UserPlus size={17} aria-hidden="true" /> Invite
+    </button>
+  </form>;
+}
+
+export function VolunteerDirectory({ filter, events, event, volunteers, hasNext }: {
+  filter: DirectoryFilter; events: PortalEvent[]; event?: PortalEvent;
+  volunteers: VolunteerDirectoryProfile[]; hasNext: boolean;
+}) {
+  const hasFilters = Boolean(filter.q || filter.city || filter.skill || filter.availability);
+  const clear = volunteerDirectoryHref({ ...filter, q: "", city: "", skill: "", availability: "", page: 1 });
+  return <div className={styles.directory}>
+    <DirectoryFilters key={volunteerDirectoryHref({ ...filter, page: 1 })}
+      filter={filter} events={events.map(({ id, title }) => ({ id, title }))} />
+    {(event || hasFilters) && <div className={styles.context}>
+      {event && <p><CalendarDays size={17} aria-hidden="true" /> Inviting for <strong>{event.title}</strong></p>}
+      {hasFilters && <Link href={clear} className={styles.textLink}>Clear filters</Link>}
+    </div>}
+    {volunteers.length ? <ul className={styles.results}>
+      {volunteers.map(volunteer => <li className={styles.card} key={volunteer.person_id}>
+        <Avatar volunteer={volunteer} />
+        <div className={styles.cardContent}>
+          <div className={styles.cardHeading}>
+            <h2>{volunteer.full_name}</h2>
+            <AvailabilityBadge volunteer={volunteer} />
+          </div>
+          <SkillList skills={volunteer.skills} />
+          {volunteer.city && <p className={styles.city}><MapPin size={15} aria-hidden="true" /> {volunteer.city}</p>}
+          <div className={styles.cardActions}>
+            <InviteButton volunteer={volunteer} event={event} />
+            <Link className={styles.profileLink} href={volunteerDirectoryHref(filter, volunteer.person_id)}
+              aria-label={`View profile for ${volunteer.full_name}`}>
+              View Profile <ChevronRight size={17} aria-hidden="true" />
+            </Link>
+          </div>
+        </div>
+      </li>)}
+    </ul> : <p className={styles.empty}>No volunteers match these filters.</p>}
+    {(filter.page > 1 || hasNext) && <nav className={styles.pagination} aria-label="Volunteer results pages">
+      {filter.page > 1 && <Link className={styles.textLink} href={volunteerDirectoryHref({ ...filter, page: filter.page - 1 })}>Previous</Link>}
+      <span>Page {filter.page}</span>
+      {hasNext && <Link className={styles.textLink} href={volunteerDirectoryHref({ ...filter, page: filter.page + 1 })}>Next</Link>}
+    </nav>}
+  </div>;
+}
+
+export function VolunteerDirectoryDetails({ volunteer, event }: { volunteer: VolunteerDirectoryProfile; event?: PortalEvent }) {
+  return <section className={styles.details} aria-label="Volunteer details">
+    <div className={styles.detailsIntro}>
+      <Avatar volunteer={volunteer} large />
+      <div>
+        {volunteer.city && <p className={styles.city}><MapPin size={17} aria-hidden="true" /> {volunteer.city}</p>}
+        <AvailabilityBadge volunteer={volunteer} />
+        {volunteer.emergency_seva && <p>Open to last-minute seva</p>}
+      </div>
+    </div>
+    {volunteer.skills.length > 0 && <div>
+      <h2>Skills</h2>
+      <SkillList skills={volunteer.skills} />
+      {volunteer.skills_simulated && <p className={styles.city}>Sample skills</p>}
+    </div>}
+    {volunteer.interests.length > 0 && <div>
+      <h2>Interested in learning</h2>
+      <p>{volunteer.interests.join(" · ")}</p>
+    </div>}
+    {event && <div className={styles.context}><p><CalendarDays size={17} aria-hidden="true" /> {event.title}</p>
+      <InviteButton volunteer={volunteer} event={event} />
+    </div>}
+  </section>;
+}
