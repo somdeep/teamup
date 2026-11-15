@@ -54,6 +54,7 @@ export default async function TeacherPage({ searchParams }: { searchParams: Prom
   const read = (key: string) => typeof params[key] === "string" ? params[key] : "";
   const view = read("view");
   const eventId = read("event");
+  const parentEventId = read("parentEvent");
   const notice = read("notice");
   const message = Object.hasOwn(messages, notice) ? messages[notice as keyof typeof messages] : undefined;
   const title = Object.hasOwn(viewTitles, view) ? viewTitles[view as keyof typeof viewTitles] : "Teacher Portal";
@@ -70,10 +71,18 @@ export default async function TeacherPage({ searchParams }: { searchParams: Prom
     redirect(`/events/${eventId}${suffix}`);
   }
 
-  if (view === "create" || view === "priority") return <AuthShell wide title={title} backHref="/teacher" backLabel="Back to Teacher Portal" headerActions={headerActions}
-    description={view === "priority" ? "Find volunteers who are open to last-minute seva." : undefined}>
-    <TeacherEventForm id={randomUUID()} priority={view === "priority"} />
-  </AuthShell>;
+  if (view === "create" || view === "priority") {
+    const parent = isUuid(parentEventId) ? events.find(item => item.id === parentEventId && item.can_manage
+      && !item.parent_event_id && item.child_count < 5) : undefined;
+    if (parentEventId && !parent) redirect("/teacher?view=events");
+    return <AuthShell wide title={parent ? "Create Related Seva" : title}
+      backHref={parent ? `/events/${parent.id}` : "/teacher"} backLabel={parent ? `Back to ${parent.title}` : "Back to Teacher Portal"}
+      headerActions={headerActions}
+      description={parent ? "Create a linked event with its own volunteers, schedule, invitations, and Event Circle."
+        : view === "priority" ? "Find volunteers who are open to last-minute seva." : undefined}>
+      <TeacherEventForm id={randomUUID()} priority={view === "priority"} parent={parent} />
+    </AuthShell>;
+  }
 
   if (view === "find") {
     const filter = readDirectoryFilter(params);

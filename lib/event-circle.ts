@@ -15,8 +15,24 @@ export type EventCircle = {
   category: string | null;
   status: string;
   can_manage: boolean;
+  parent_event_id: string | null;
+  parent_event_title: string | null;
+  parent_can_access: boolean;
+  related_events: RelatedEvent[];
   confirmed_count: number;
   my_invitation_status: string | null;
+};
+
+export type RelatedEvent = {
+  id: string;
+  title: string;
+  city: string | null;
+  starts_at: string | null;
+  timezone: string;
+  status: string;
+  volunteers_needed: number;
+  confirmed_count: number;
+  can_access: boolean;
 };
 
 export type EventMessage = {
@@ -36,13 +52,18 @@ export async function eventCircle({ client }: PortalSession, eventId: string) {
     // applied to the linked project. Accepted-volunteer access needs the migration.
     const { data: teacherData, error: teacherError } = await client.rpc("teamup_teacher_events", { p_event_id: eventId });
     if (teacherError) return null;
-    const event = (teacherData ?? [])[0] as Omit<EventCircle, "ends_at" | "confirmed_count" | "my_invitation_status"> & {
+    const event = (teacherData ?? [])[0] as Omit<EventCircle, "ends_at" | "confirmed_count" | "my_invitation_status" | "parent_event_title" | "parent_can_access" | "related_events"> & {
       invitations?: { status?: string }[];
+      parent_title?: string | null;
     } | undefined;
     if (!event) return null;
     return {
       ...event,
       ends_at: null,
+      parent_event_id: event.parent_event_id ?? null,
+      parent_event_title: event.parent_title ?? null,
+      parent_can_access: false,
+      related_events: [],
       confirmed_count: event.invitations?.filter(invitation => invitation.status === "accepted").length ?? 0,
       my_invitation_status: null,
     };

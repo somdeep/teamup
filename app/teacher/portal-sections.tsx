@@ -36,6 +36,7 @@ export function EventList({ events }: { events: PortalEvent[] }) {
       <Link className={styles.eventRow} href={`/events/${event.id}`}>
         {event.category === "priority" ? <Zap aria-hidden="true" size={23} /> : <CalendarDays aria-hidden="true" size={23} />}
         <span><strong>{event.title}</strong><small>{formatEventTime(event)}{event.city && ` · ${event.city}`}</small>
+          {event.parent_title && <small>Related seva for {event.parent_title}</small>}
           {event.roles.length > 0 && <small>{eventRoles(event)}</small>}
         </span>
         <ChevronRight aria-hidden="true" size={20} />

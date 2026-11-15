@@ -14,6 +14,7 @@ export type PortalEvent = {
   id: string; title: string; city: string | null; venue_name: string | null; description: string | null;
   starts_at: string | null; timezone: string; volunteers_needed: number; category: string | null;
   required_skills: string[]; status: string; invitations: PortalInvitation[];
+  parent_event_id: string | null; parent_title: string | null; child_count: number;
   roles: (keyof typeof eventRoleLabels)[]; can_manage: boolean;
 };
 export type DirectoryVolunteer = { person_id: string; full_name: string; city: string | null; skills: string[]; skills_simulated?: boolean; emergency_seva?: boolean };

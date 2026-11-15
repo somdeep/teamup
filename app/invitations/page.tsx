@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { portalSession } from "../../lib/portal-access";
 import type { InvitationStatus, PortalEvent } from "../../lib/teacher-data";
 import { formatEventTime, isOpenEvent } from "../../lib/teacher-event";
@@ -13,7 +14,8 @@ export const metadata: Metadata = { title: "Invitations | TeamUp", robots: { ind
 type InboxInvitation = { id: string; status: InvitationStatus; events: Pick<PortalEvent, "id" | "title" | "city" | "starts_at" | "timezone" | "status"> | null };
 
 export default async function InvitationsPage({ searchParams }: { searchParams: Promise<{ notice?: string }> }) {
-  const { client, profile } = await portalSession();
+  const { client, profile, access } = await portalSession();
+  if (access.role === "teacher") redirect("/teacher?view=requests");
   const { notice } = await searchParams;
   const { data, error } = profile.person_id ? await client.from("invitations").select("id,status,events(id,title,city,starts_at,timezone,status)")
     .eq("person_id", profile.person_id).order("invited_at", { ascending: false }).limit(1000) : { data: [], error: null };

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
-  CalendarDays, CalendarHeart, ChevronRight, ClipboardCheck, Clock3, MapPin, Send,
+  CalendarDays, CalendarHeart, ChevronDown, ChevronRight, ClipboardCheck, Clock3, MapPin, Plus, Send,
   UsersRound,
 } from "lucide-react";
 import { eventCircle, eventMessages } from "../../../lib/event-circle";
@@ -66,6 +66,10 @@ export default async function EventCirclePage({
       {notice === "request-cancelled" && <p className={styles.notice} role="status">The volunteer request was cancelled.</p>}
       {notice === "cancel-failed" && <p className={styles.notice} role="alert">We couldn’t cancel that request. It may already have been answered.</p>}
 
+      {event.parent_event_id && <p className={styles.parentContext}>Part of {event.parent_can_access
+        ? <Link href={`/events/${event.parent_event_id}`}>{event.parent_event_title ?? "parent event"}</Link>
+        : <strong>{event.parent_event_title ?? "a parent event"}</strong>}</p>}
+
       <section className={styles.eventCard} aria-label="Event details">
         <div className={styles.eventArt}><CalendarHeart aria-hidden="true" /></div>
         <div>
@@ -87,15 +91,45 @@ export default async function EventCirclePage({
         <span className={styles.spots}>{spotsLeft} {spotsLeft === 1 ? "Spot" : "Spots"} Left</span>
       </section>
 
+      {!event.parent_event_id && (event.can_manage || event.related_events.length > 0) && <div className={styles.relatedWrap}>
+        <details className={styles.collapsible}>
+          <summary>
+            <span><CalendarHeart aria-hidden="true" /><strong>Related Seva</strong></span>
+            <span className={styles.countBadge}>{event.related_events.length}/5</span>
+            <ChevronDown className={styles.chevron} aria-hidden="true" />
+          </summary>
+          <div className={styles.relatedList}>
+            {event.related_events.length ? event.related_events.map(related => {
+              const content = <><span><strong>{related.title}</strong><small>{eventDate(related)}{related.city && ` · ${related.city}`}</small></span>
+                <span className={styles.relatedCount}>{related.confirmed_count}/{related.volunteers_needed}</span>{related.can_access && <ChevronRight aria-hidden="true" />}</>;
+              return related.can_access
+                ? <Link key={related.id} href={`/events/${related.id}`} className={styles.relatedRow}>{content}</Link>
+                : <div key={related.id} className={styles.relatedRow}>{content}</div>;
+            }) : <p className={styles.emptyRelated}>No related seva has been added yet.</p>}
+          </div>
+        </details>
+        {event.can_manage && event.related_events.length < 5 && <Link className={styles.addRelated}
+          href={`/teacher?view=create&parentEvent=${event.id}`} aria-label={`Add related seva to ${event.title}`} title="Add related seva">
+          <Plus aria-hidden="true" />
+        </Link>}
+      </div>}
+
       {event.can_manage && <nav className={styles.circleLinks} aria-label="Event management">
         <Link href={`/teacher?view=find&forEvent=${event.id}`}><Send aria-hidden="true" /><strong>Invite Volunteers</strong><ChevronRight aria-hidden="true" /></Link>
-        <a href="#applications"><ClipboardCheck aria-hidden="true" /><strong>Applications</strong><ChevronRight aria-hidden="true" /></a>
       </nav>}
 
-      {event.can_manage && <section className={styles.applications} id="applications" aria-labelledby="applications-heading">
-        <h2 id="applications-heading">Applications & requests</h2>
-        <InvitationList requests={invitations.map(invite => ({ event: { ...event, required_skills: [], invitations, roles: [] }, invite }))} />
-      </section>}
+      {event.can_manage && <details className={styles.collapsible} id="applications">
+        <summary>
+          <span><ClipboardCheck aria-hidden="true" /><strong>Applications & Requests</strong></span>
+          <span className={styles.countBadge}>{invitations.length}</span>
+          <ChevronDown className={styles.chevron} aria-hidden="true" />
+        </summary>
+        <div className={styles.collapsibleContent}>
+          <InvitationList requests={invitations.map(invite => ({ event: {
+            ...event, required_skills: [], invitations, roles: [], parent_title: event.parent_event_title, child_count: event.related_events.length,
+          }, invite }))} />
+        </div>
+      </details>}
 
       <MessageBoard eventId={event.id} messages={messages} />
     </div>
