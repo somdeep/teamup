@@ -12,7 +12,8 @@
 .tile.priority { border-color: #ac3d00; background: linear-gradient(145deg,#c75900,#ac3900); color: #fff; }
 .tile.priority:hover { background: #a03800; }
 .tile.priority > svg { color: #fff; }
-.tile:focus-visible, .eventRow:focus-visible, .smallButton:focus-visible, .textLink:focus-visible {
+.tile:focus-visible, .eventRow:focus-visible, .smallButton:focus-visible, .cancelButton:focus-visible, .textLink:focus-visible,
+.volunteerProfile:focus-visible, .volunteerName:focus-visible {
   outline: 2px solid #005a65; outline-offset: 3px;
 }
 .badge { position: absolute; inset: .33rem .33rem auto auto; border-radius: 1rem; padding: .2rem .4rem; background: #ae4600; color: #fff; font-size: .73rem; }
@@ -20,10 +21,10 @@
   border: 1.5px solid #168f97; border-radius: 1rem; padding: .7rem .85rem; background: #fff;
 }
 .eventRow, .reply, .volunteer { display: flex; align-items: center; gap: .7rem; }
-.eventRow > span, .reply > span:first-child, .volunteer > div { min-inline-size: 0; flex: 1; overflow-wrap: anywhere; }
+.eventRow > span, .reply > span:first-child, .volunteerProfile { min-inline-size: 0; flex: 1; overflow-wrap: anywhere; }
 .eventRow > svg:first-child { color: #b34b00; }
 .eventRow svg, .eventInfo p svg, .volunteer p svg { flex: none; }
-.eventRow strong, .reply strong, .volunteer h3 { font-weight: 800; }
+.eventRow strong, .reply strong, .volunteer h3, .volunteerName { font-weight: 800; }
 .eventRow small, .reply small, .volunteer small { display: block; color: #486168; font-size: .86rem; }
 .volunteer p, .eventInfo p { display: flex; align-items: flex-start; gap: .42rem; font-size: .92rem; }
 .volunteer p svg, .eventInfo p svg { color: #08767e; }
@@ -37,6 +38,12 @@
 .status[data-status="accepted"] { color: #176442; background: #e2f6e8; }
 .status[data-status="declined"] { color: #92350a; background: #fff1e9; }
 .smallButton { border: 1.5px solid #08767e; border-radius: 1.1rem; padding: .42rem .72rem; background: #effafa; color: #00565e; font-weight: 800; cursor: pointer; }
+.cancelButton { border: 1px solid #9b3d1a; border-radius: 1.1rem; padding: .38rem .62rem; color: #8b3212; background: #fff5ef; font-size: .78rem; font-weight: 800; cursor: pointer; }
+.cancelButton:hover { background: #ffe9dd; }
+.volunteerProfile { display: flex; align-items: center; gap: .55rem; border-radius: .65rem; }
+.volunteerProfile > div { min-width: 0; flex: 1; }
+.volunteerProfile:hover h3, .volunteerName:hover { color: #006b72; text-decoration: underline; }
+.volunteerName { display: inline-block; border-radius: .3rem; }
 .tags { display: flex; flex-wrap: wrap; gap: .25rem; margin: .35rem 0; }
 .tags li { border-radius: .85rem; background: #eaf7f7; padding: .24rem .45rem; color: #214d53; font-size: .76rem; }
 .field { display: grid; min-inline-size: 0; gap: .28rem; color: #073d49; font-weight: 700; }

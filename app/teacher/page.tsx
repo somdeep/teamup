@@ -11,7 +11,10 @@ import { AuthShell } from "../auth/auth-shell";
 import { redirect } from "next/navigation";
 import { TeacherEventForm } from "./event-form";
 import { EventList, InvitationList, TeacherTiles, VolunteerCard } from "./portal-sections";
-import { DirectoryHeader, VolunteerDirectory, VolunteerDirectoryDetails } from "./volunteer-directory";
+import {
+  DirectoryHeader, VolunteerDirectory, VolunteerDirectoryDetails,
+  VolunteerProfileAvailability, VolunteerProfileHero,
+} from "./volunteer-directory";
 import styles from "./teacher.module.css";
 
 export const metadata: Metadata = { title: "Teacher Portal | TeamUp", robots: { index: false } };
@@ -22,6 +25,8 @@ const messages = {
   invited: "Invitation sent in TeamUp.",
   "already-invited": "This volunteer already has an invitation for this event.",
   "invite-failed": "We couldn’t send the invitation. Check that the event is still open.",
+  "request-cancelled": "The volunteer request was cancelled.",
+  "cancel-failed": "We couldn’t cancel that request. It may have already been answered.",
   "profile-saved": "Your profile was saved.",
 };
 
@@ -62,7 +67,7 @@ export default async function TeacherPage({ searchParams }: { searchParams: Prom
     const confirmed = event.invitations.filter(invite => invite.status === "accepted").length;
     return <AuthShell wide title={event.can_manage ? "Event Circle" : "Event Details"} backHref="/teacher" backLabel="Back to Teacher Portal">
       <div className={styles.stack}>
-        {message && <p className={styles.notice} role={notice === "invite-failed" ? "alert" : "status"}>{message}</p>}
+        {message && <p className={styles.notice} role={notice === "invite-failed" || notice === "cancel-failed" ? "alert" : "status"}>{message}</p>}
         <section className={styles.eventInfo} aria-label="Event details">
           <h2>{event.title}</h2>
           <p><CalendarDays aria-hidden="true" size={18} /> {formatEventTime(event)}</p>
@@ -107,7 +112,9 @@ export default async function TeacherPage({ searchParams }: { searchParams: Prom
     if (personId) {
       const volunteer = isUuid(personId) ? await teacherVolunteer(session, personId) : null;
       const phone = volunteer ? await teacherVolunteerPhone(session, personId) : null;
-      return <AuthShell wide title={volunteer?.full_name ?? "Profile unavailable"}
+      return <AuthShell wide beforeTitle={volunteer ? <VolunteerProfileHero volunteer={volunteer} /> : undefined}
+        title={volunteer?.full_name ?? "Profile unavailable"}
+        description={volunteer ? <VolunteerProfileAvailability volunteer={volunteer} /> : undefined}
         backHref={volunteerDirectoryHref(filter)} backLabel="Back to Find Volunteers" headerActions={headerActions}>
         {volunteer ? <VolunteerDirectoryDetails volunteer={volunteer} event={forEvent} phone={phone} />
           : <p className={styles.empty}>This volunteer profile is unavailable.</p>}

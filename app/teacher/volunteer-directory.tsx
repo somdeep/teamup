@@ -7,7 +7,7 @@ import {
 } from "lucide-react";
 import type { PortalEvent, VolunteerDirectoryProfile } from "../../lib/teacher-data";
 import { directoryAvailability, volunteerDirectoryHref, type DirectoryFilter } from "../../lib/volunteer-directory";
-import { inviteVolunteer } from "./actions";
+import { cancelInvitation, inviteVolunteer } from "./actions";
 import { DirectoryFilters } from "./directory-filters";
 import styles from "./directory.module.css";
 
@@ -62,6 +62,11 @@ function SkillList({ skills }: { skills: string[] }) {
 function InviteButton({ volunteer, event, request = false }: { volunteer: VolunteerDirectoryProfile; event?: PortalEvent; request?: boolean }) {
   if (!event) return null;
   const invitation = event.invitations.find(item => item.person_id === volunteer.person_id);
+  if (invitation?.status === "pending") return <form action={cancelInvitation}>
+    <input type="hidden" name="eventId" value={event.id} />
+    <input type="hidden" name="invitationId" value={invitation.id} />
+    <button className={styles.cancelRequest} aria-label={`Cancel request to ${volunteer.full_name}`}>Cancel Request</button>
+  </form>;
   if (invitation) return <span className={styles.inviteStatus}>{request ? "Request" : "Invitation"} {invitation.status}</span>;
   return <form action={inviteVolunteer}>
     <input type="hidden" name="eventId" value={event.id} />
@@ -70,6 +75,14 @@ function InviteButton({ volunteer, event, request = false }: { volunteer: Volunt
       <UserPlus size={17} aria-hidden="true" /> {request ? "Send Request" : "Invite"}
     </button>
   </form>;
+}
+
+export function VolunteerProfileHero({ volunteer }: { volunteer: VolunteerDirectoryProfile }) {
+  return <div className={styles.profileHero}><Avatar volunteer={volunteer} large /></div>;
+}
+
+export function VolunteerProfileAvailability({ volunteer }: { volunteer: VolunteerDirectoryProfile }) {
+  return <AvailabilityBadge volunteer={volunteer} />;
 }
 
 export function VolunteerDirectory({ filter, events, event, volunteers, hasNext }: {
@@ -115,27 +128,28 @@ export function VolunteerDirectory({ filter, events, event, volunteers, hasNext 
 
 export function VolunteerDirectoryDetails({ volunteer, event, phone }: { volunteer: VolunteerDirectoryProfile; event?: PortalEvent; phone: string | null }) {
   const phoneHref = phone?.replace(/[^\d+*#;,]/g, "");
+  const availability = volunteer.availability_patterns.length
+    ? volunteer.availability_patterns.join(", ")
+    : directoryAvailability[volunteer.availability_status];
   return <section className={styles.details} aria-label="Volunteer details">
-    <div className={styles.detailsIntro}>
-      <Avatar volunteer={volunteer} large />
-      <div>
-        {volunteer.city && <p className={styles.city}><MapPin size={17} aria-hidden="true" /> {volunteer.city}</p>}
-        <AvailabilityBadge volunteer={volunteer} />
-        {volunteer.emergency_seva && <p>Open to last-minute seva</p>}
-      </div>
-    </div>
-    {volunteer.skills.length > 0 && <div>
+    {volunteer.skills.length > 0 && <div className={styles.profileSkills}>
       <h2>Skills</h2>
       <SkillList skills={volunteer.skills} />
       {volunteer.skills_simulated && <p className={styles.city}>Sample skills</p>}
     </div>}
-    {volunteer.interests.length > 0 && <div>
+    <div className={styles.profileStats}>
+      <div><CalendarDays aria-hidden="true" size={28} /><span><strong>Availability</strong><small>{availability}</small></span></div>
+      <div><MapPin aria-hidden="true" size={28} /><span><strong>Location</strong><small>{volunteer.city || "Not provided"}</small></span></div>
+      <div><HeartHandshake aria-hidden="true" size={28} /><span><strong>Past Seva</strong><small>{volunteer.past_seva_count} {volunteer.past_seva_count === 1 ? "event" : "events"}</small></span></div>
+    </div>
+    {volunteer.emergency_seva && <p className={styles.emergency}><strong>Open to last-minute seva</strong></p>}
+    {volunteer.interests.length > 0 && <div className={styles.profilePanel}>
       <h2>Interested in learning</h2>
       <p>{volunteer.interests.join(" · ")}</p>
     </div>}
     <div className={styles.detailsActions}>
       {event && <div className={styles.eventContext}>
-        <p><CalendarDays size={17} aria-hidden="true" /> Request to volunteer for <strong>{event.title}</strong></p>
+        <p><CalendarDays size={17} aria-hidden="true" /> For <strong>{event.title}</strong></p>
         <InviteButton volunteer={volunteer} event={event} request />
       </div>}
       {phoneHref && <a className={styles.callButton} href={`tel:${phoneHref}`} aria-label={`Call ${volunteer.full_name}`}>

@@ -17,7 +17,13 @@ export type PortalEvent = {
   roles: (keyof typeof eventRoleLabels)[]; can_manage: boolean;
 };
 export type DirectoryVolunteer = { person_id: string; full_name: string; city: string | null; skills: string[]; skills_simulated?: boolean; emergency_seva?: boolean };
-export type VolunteerDirectoryProfile = DirectoryVolunteer & { interests: string[]; availability_status: VolunteerAvailability; has_photo: boolean };
+export type VolunteerDirectoryProfile = DirectoryVolunteer & {
+  interests: string[];
+  availability_status: VolunteerAvailability;
+  availability_patterns: string[];
+  past_seva_count: number;
+  has_photo: boolean;
+};
 export type MatchedVolunteer = DirectoryVolunteer & { score: number; reasons: string[]; invitation_status: InvitationStatus | null };
 
 export function eventRoles(event: PortalEvent) {
@@ -30,7 +36,7 @@ export async function teacherEvents({ client }: TeacherSession, eventId?: string
   return (data ?? []) as PortalEvent[];
 }
 
-const directoryColumns = "person_id,full_name,city,skills,interests,skills_simulated,emergency_seva,availability_status,has_photo";
+const directoryColumns = "person_id,full_name,city,skills,interests,skills_simulated,emergency_seva,availability_status,availability_patterns,past_seva_count,has_photo";
 
 export async function teacherDirectory({ client, profile }: TeacherSession, filter: DirectoryFilter) {
   const pageSize = 12;

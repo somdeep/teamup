@@ -40,3 +40,9 @@ export function volunteerDirectoryHref(filter: DirectoryFilter, person?: string)
   if (person) params.set("person", person);
   return `/teacher?${params}`;
 }
+
+export function volunteerProfileHref(person: string, forEvent?: string) {
+  const params = new URLSearchParams({ view: "find", person });
+  if (forEvent) params.set("forEvent", forEvent);
+  return `/teacher?${params}`;
+}

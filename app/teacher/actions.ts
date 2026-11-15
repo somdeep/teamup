@@ -32,3 +32,16 @@ export async function inviteVolunteer(form: FormData) {
   const notice = error ? "invite-failed" : data ? "invited" : "already-invited";
   redirect(`/teacher?event=${eventId}&notice=${notice}`);
 }
+
+export async function cancelInvitation(form: FormData) {
+  const { client } = await teacherSession();
+  const eventId = form.get("eventId");
+  const invitationId = form.get("invitationId");
+  if (!isUuid(eventId) || !isUuid(invitationId)) redirect("/teacher?notice=cancel-failed");
+
+  const { data, error } = await client.from("invitations").delete()
+    .eq("id", invitationId).eq("event_id", eventId).eq("status", "pending")
+    .select("id").maybeSingle();
+  const notice = !error && data ? "request-cancelled" : "cancel-failed";
+  redirect(`/teacher?event=${eventId}&notice=${notice}`);
+}

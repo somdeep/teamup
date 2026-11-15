@@ -200,6 +200,8 @@
 .invite { padding: .2rem .55rem; border-radius: 2rem; background: #dcf3f3; cursor: pointer; }
 .invite:hover { background: #c3e9e8; }
 .inviteStatus { color: #496166; font-size: .8rem; font-weight: 700; }
+.cancelRequest { min-height: 2.15rem; padding: .3rem .68rem; border: 1px solid #a14420; border-radius: 2rem; background: #fff5ef; color: #8b3212; font-size: .82rem; font-weight: 800; cursor: pointer; }
+.cancelRequest:hover { background: #ffe7db; }
 
 .shortcut {
   position: relative;
@@ -216,19 +218,34 @@
 .context { justify-content: space-between; }
 .context p { display: flex; align-items: center; flex-wrap: wrap; gap: .3rem; }
 .pagination { justify-content: center; }
-.empty, .details { border: 1px solid #81b5b8; border-radius: 1rem; background: #fff; padding: 1rem; }
-.details { display: grid; gap: 1rem; }
-.details h2 { margin-bottom: .3rem; font-weight: 800; color: #0a2538; }
-.detailsIntro { display: flex; flex-wrap: wrap; align-items: center; gap: .9rem; }
-.detailsIntro > div { display: grid; justify-items: start; gap: .35rem; }
-.largeAvatar { width: clamp(5rem, 22vw, 9rem); }
-.detailsActions { display: flex; flex-wrap: wrap; align-items: stretch; gap: .65rem; }
-.eventContext { display: flex; flex: 1 1 16rem; flex-wrap: wrap; align-items: center; gap: .55rem .8rem; padding: .8rem; border-radius: .9rem; background: #f2f9f8; }
+.empty { border: 1px solid #81b5b8; border-radius: 1rem; background: #fff; padding: 1rem; }
+.profileHero { display: grid; justify-items: center; margin: .15rem 0 .35rem; }
+.profileHero .largeAvatar { width: clamp(8.75rem, 38vw, 11.5rem); border: 3px solid #12a9ae; box-shadow: 0 .3rem 1rem #184c5b1c; }
+.profileHero + h1 { text-align: center; }
+.profileHero + h1 + p .availability { font-size: .9rem; letter-spacing: 0; }
+.details { display: grid; gap: 1.2rem; color: #0a2538; }
+.details h2 { margin-bottom: .55rem; font-size: clamp(1.2rem, 4.8vw, 1.55rem); font-weight: 800; }
+.profileSkills .skillList { justify-content: center; gap: .55rem; }
+.profileSkills .skillList li { min-height: 2.75rem; padding: .45rem .8rem; border: 1.5px solid #168f97; border-radius: 2rem; background: #fff; font-size: clamp(.82rem, 3.5vw, .98rem); font-weight: 700; }
+.profileSkills .skillList li > svg { color: #ee7900; }
+.profileSkills > .city { justify-content: center; margin-top: .4rem; }
+.profileStats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border: 1.5px solid #16a2a8; border-radius: 1.25rem; background: #fff; padding: .8rem .35rem; }
+.profileStats > div { display: grid; min-width: 0; grid-template-columns: auto minmax(0, 1fr); align-items: start; gap: .35rem; padding: .15rem clamp(.25rem, 2vw, .75rem); }
+.profileStats > div + div { border-inline-start: 1px solid #17a1a7; }
+.profileStats svg { color: #ef7d00; }
+.profileStats span { display: grid; min-width: 0; gap: .12rem; }
+.profileStats strong { font-size: clamp(.73rem, 3.15vw, 1rem); line-height: 1.1; }
+.profileStats small { color: #294851; font-size: clamp(.67rem, 2.8vw, .88rem); overflow-wrap: anywhere; }
+.emergency, .profilePanel { border: 1px solid #8bd1d4; border-radius: 1rem; background: #effafa; padding: .8rem 1rem; }
+.profilePanel p { color: #294851; }
+.detailsActions { display: flex; flex-wrap: wrap; align-items: stretch; justify-content: center; gap: .65rem; }
+.eventContext { display: flex; flex: 1 1 17rem; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .55rem .8rem; padding: .75rem; border-radius: 1rem; background: #fff7e8; }
 .eventContext p { display: flex; flex: 1 1 100%; align-items: center; flex-wrap: wrap; gap: .35rem; color: #294851; font-size: .92rem; }
 .eventContext p svg { flex: 0 0 auto; color: #076b74; }
-.details .invite { min-height: 2.8rem; padding: .55rem 1rem; border-radius: 2rem; background: linear-gradient(100deg, #ff9e00, #f45117); color: #fff; font-size: .95rem; }
+.details .invite { min-height: 3rem; padding: .55rem 1.15rem; border-radius: 2rem; background: linear-gradient(100deg, #ff9e00, #f45117); color: #fff; font-size: .95rem; }
 .details .invite:hover { background: #e75b17; }
-.callButton { display: inline-flex; flex: 0 0 auto; align-items: center; justify-content: center; gap: .45rem; min-height: 2.8rem; padding: .55rem 1rem; border: 1.5px solid var(--teal); border-radius: 2rem; background: #fff; color: #075b66; font-weight: 800; }
+.details .cancelRequest { min-height: 3rem; padding-inline: 1rem; }
+.callButton { display: inline-flex; flex: 0 0 auto; align-items: center; justify-content: center; gap: .45rem; min-height: 3rem; padding: .55rem 1.2rem; border: 1.5px solid var(--teal); border-radius: 2rem; background: #fff; color: #075b66; font-weight: 800; }
 .callButton:hover { background: #edf9f8; }
 
 .directory :is(a, button, select, summary, .popover input):focus-visible,
