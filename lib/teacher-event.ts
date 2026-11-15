@@ -22,6 +22,7 @@ export function readTeacherEvent(form: FormData, now = Date.now()) {
   const end = readText(form, "endsAt");
   const timezone = readText(form, "timezone");
   const volunteers = readText(form, "volunteers");
+  const eventType = readText(form, "eventType");
   const skills = [...new Set(form.getAll("skills"))];
   const validSkills = skills.filter((skill): skill is string => sevaSkills.some(option => option === skill));
 
@@ -34,6 +35,7 @@ export function readTeacherEvent(form: FormData, now = Date.now()) {
   }
   if (validSkills.length !== skills.length) return { error: "Choose required skills from the list." } as const;
   if (!eventTimeZones.some(([zone]) => zone === timezone)) return { error: "Choose the event time zone." } as const;
+  if (eventType && eventType !== "event" && eventType !== "course") return { error: "Choose a valid event type." } as const;
 
   const localTime = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/;
   if (!localTime.test(start) || !localTime.test(end)) return { error: "Enter a start and end date and time." } as const;
@@ -50,7 +52,7 @@ export function readTeacherEvent(form: FormData, now = Date.now()) {
   return { event: {
     id, title, city, venue_name: venue || null, description: description || null,
     starts_local: start, ends_local: end, timezone, required_skills: validSkills,
-    volunteers_needed: Number(volunteers), category: form.get("priority") === "on" ? "priority" : null,
+    volunteers_needed: Number(volunteers), category: form.get("priority") === "on" ? "priority" : eventType === "course" ? "course" : null,
   } } as const;
 }
 

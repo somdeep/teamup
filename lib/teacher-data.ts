@@ -9,7 +9,14 @@ const eventRoleLabels = {
 } as const;
 
 export type InvitationStatus = "pending" | "accepted" | "declined";
-export type PortalInvitation = { id: string; person_id: string; status: InvitationStatus; people: { full_name: string } | null };
+export type PortalInvitation = {
+  id: string;
+  person_id: string;
+  status: InvitationStatus;
+  request_source: "teacher_invitation" | "volunteer_application";
+  requested_role: string | null;
+  people: { full_name: string } | null;
+};
 export type PortalEvent = {
   id: string; title: string; city: string | null; venue_name: string | null; description: string | null;
   starts_at: string | null; timezone: string; volunteers_needed: number; category: string | null;

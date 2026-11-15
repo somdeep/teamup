@@ -16,6 +16,7 @@ type InboxInvitation = { id: string; status: InvitationStatus; events: Pick<Port
 export default async function InvitationsPage({ searchParams }: { searchParams: Promise<{ notice?: string }> }) {
   const { client, profile, access } = await portalSession();
   if (access.role === "teacher") redirect("/teacher?view=requests");
+  if (access.role === "volunteer") redirect("/volunteer?view=requests&tab=invitations");
   const { notice } = await searchParams;
   const { data, error } = profile.person_id ? await client.from("invitations").select("id,status,events(id,title,city,starts_at,timezone,status)")
     .eq("person_id", profile.person_id).order("invited_at", { ascending: false }).limit(1000) : { data: [], error: null };

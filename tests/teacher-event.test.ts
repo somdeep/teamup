@@ -29,6 +29,14 @@ test("validates a priority event and deduplicates canonical skills", () => {
   assert.ok("error" in readTeacherEvent(form, now));
 });
 
+test("creates a course through the normal event workflow", () => {
+  const form = eventForm();
+  form.set("eventType", "course");
+  const result = readTeacherEvent(form, now);
+  if ("error" in result) assert.fail(result.error);
+  assert.equal(result.event.category, "course");
+});
+
 test("rejects past, reversed and ambiguous local event times", () => {
   const form = eventForm();
   form.set("endsAt", "2027-01-16T17:30");

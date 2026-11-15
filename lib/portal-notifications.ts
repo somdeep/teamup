@@ -16,8 +16,8 @@ export async function portalNotifications(client: Client, accountId: string, acc
   }
 
   const { data: profile } = await client.from("profiles").select("person_id").eq("id", accountId).maybeSingle();
-  if (!profile?.person_id) return { href: "/invitations", label: "Invitations", pending: 0 };
+  if (!profile?.person_id) return { href: "/volunteer?view=requests&tab=invitations", label: "Invitations", pending: 0 };
   const { count } = await client.from("invitations").select("id", { count: "exact", head: true })
-    .eq("person_id", profile.person_id).eq("status", "pending");
-  return { href: "/invitations", label: "Invitations", pending: count ?? 0 };
+    .eq("person_id", profile.person_id).eq("status", "pending").eq("request_source", "teacher_invitation");
+  return { href: "/volunteer?view=requests&tab=invitations", label: "Invitations", pending: count ?? 0 };
 }

@@ -80,14 +80,39 @@ a.relatedRow:hover { background: #edfafa; }
 .message > div { display: flex; flex-wrap: wrap; justify-content: space-between; gap: .2rem .7rem; }
 .message time { color: #60757a; font-size: .72rem; }
 .message p { margin-top: .28rem; white-space: pre-wrap; overflow-wrap: anywhere; }
+.messageImage { width: 100%; max-height: 24rem; margin-top: .55rem; border-radius: .75rem; object-fit: contain; background: #edf5f4; }
 .noMessages { padding: .85rem; border-radius: .8rem; background: #fff; color: #4c686e; text-align: center; }
 .messageForm { display: grid; gap: .35rem; }
 .messageForm label { font-weight: 800; }
+.messageForm .imagePicker { display: flex; flex-wrap: wrap; align-items: center; gap: .35rem; width: fit-content; border: 1.3px solid #78c7ca; border-radius: 999px; background: #fff; padding: .42rem .7rem; color: #086a73; cursor: pointer; }
+.imagePicker svg { width: 1.2rem; }
+.imagePicker input { width: 100%; color: #496269; font-size: .75rem; }
+.imagePicker small { color: #60757a; font-size: .68rem; font-weight: 500; }
 .messageForm > div { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: .55rem; }
 .messageForm textarea { width: 100%; min-height: 4.5rem; resize: vertical; padding: .65rem .75rem; border: 1.5px solid #168f97; border-radius: .85rem; background: #fff; outline: none; }
 .messageForm textarea:focus { box-shadow: 0 0 0 2px #168f9738; }
 .messageForm button { display: inline-flex; align-items: center; gap: .35rem; min-height: 2.75rem; padding: .55rem .8rem; border-radius: 2rem; background: linear-gradient(100deg, #ff9f00, #ef4c17); color: #fff; font-weight: 850; cursor: pointer; }
 .messageForm button:hover { background: #dc551a; }
+.resourcePanel { display: grid; gap: .7rem; padding: .85rem; border: 1.5px solid #78c7ca; border-radius: 1.1rem; background: #fff; scroll-margin-top: 1rem; }
+.resourceHeading { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .4rem; color: #0a2538; }
+.resourceHeading > span { display: flex; align-items: center; gap: .45rem; }
+.resourceHeading svg { color: #08767e; }
+.resourceHeading small, .noResource { color: #567078; font-size: .8rem; }
+.resourceFile { display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; align-items: center; gap: .55rem; border-radius: .85rem; background: #eff9f8; padding: .65rem; }
+.resourceFile > svg { color: #e36b00; }
+.resourceFile > span { display: grid; min-width: 0; }
+.resourceFile strong { overflow: hidden; color: #0a2538; text-overflow: ellipsis; white-space: nowrap; }
+.resourceFile small { color: #587078; font-size: .72rem; }
+.resourceFile a, .resourceFile button { display: inline-flex; align-items: center; gap: .25rem; border-radius: 999px; padding: .4rem .6rem; color: #087078; font-size: .76rem; font-weight: 850; cursor: pointer; }
+.resourceFile a { background: #fff; }
+.resourceFile button { color: #8b3212; }
+.resourceFile a svg, .resourceFile button svg { width: 1rem; }
+.resourceForm { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: .5rem; }
+.resourceForm label { display: flex; flex-wrap: wrap; align-items: center; gap: .35rem; color: #086a73; font-size: .85rem; font-weight: 850; }
+.resourceForm label svg { width: 1.15rem; }
+.resourceForm input { width: 100%; color: #496269; font-size: .75rem; font-weight: 500; }
+.resourceForm small { grid-column: 1; color: #60757a; font-size: .68rem; }
+.resourceForm > button { grid-column: 2; grid-row: 1 / 3; min-height: 2.65rem; border-radius: 999px; background: linear-gradient(100deg, #ff9f00, #ef4c17); padding: .5rem .8rem; color: #fff; font-weight: 850; cursor: pointer; }
 @media (max-width: 500px) {
   .eventCard { grid-template-columns: 4.7rem minmax(0, 1fr); }
   .volunteerSummary { grid-template-columns: minmax(0, 1fr) auto auto !important; }
@@ -96,4 +121,9 @@ a.relatedRow:hover { background: #edfafa; }
   .volunteerSummary .chevron { grid-column: 3; grid-row: 1; }
   .messageForm > div { grid-template-columns: minmax(0, 1fr); }
   .messageForm button { justify-self: end; }
+  .resourceFile { grid-template-columns: auto minmax(0, 1fr) auto; }
+  .resourceFile form { grid-column: 2 / -1; justify-self: end; }
+  .resourceForm { grid-template-columns: minmax(0, 1fr); }
+  .resourceForm small, .resourceForm > button { grid-column: 1; grid-row: auto; }
+  .resourceForm > button { justify-self: end; }
 }

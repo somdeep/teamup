@@ -4,7 +4,7 @@ import { ArrowRight, CalendarDays, CalendarPlus, ChevronRight, Inbox, MapPin, Us
 import { formatEventTime } from "../../lib/teacher-event";
 import { canCancelInvitation, eventRoles, type DirectoryVolunteer, type MatchedVolunteer, type PortalEvent, type PortalInvitation } from "../../lib/teacher-data";
 import { volunteerProfileHref } from "../../lib/volunteer-directory";
-import { cancelInvitation, inviteVolunteer } from "./actions";
+import { cancelInvitation, inviteVolunteer, reviewApplication } from "./actions";
 import styles from "./teacher.module.css";
 
 export function TeacherTiles({ pending, fetchAssistant }: { pending: number; fetchAssistant?: ReactNode }) {
@@ -53,9 +53,15 @@ export function InvitationList({ requests }: { requests: { event: PortalEvent; i
     <li key={invite.id} className={styles.reply}>
       <span><Link className={styles.volunteerName} href={volunteerProfileHref(invite.person_id, event.id)}>
         {invite.people?.full_name ?? "Volunteer"}
-      </Link><small>{event.title}</small></span>
+      </Link><small>{event.title}</small>{invite.requested_role && <small>Requested role: {invite.requested_role}</small>}</span>
       <span className={styles.status} data-status={invite.status}>{invite.status}</span>
-      {canCancelInvitation(invite.status) && <form action={cancelInvitation}>
+      {invite.request_source === "volunteer_application" && invite.status === "pending" && <form action={reviewApplication} className={styles.reviewActions}>
+        <input type="hidden" name="eventId" value={event.id} />
+        <input type="hidden" name="invitationId" value={invite.id} />
+        <button name="response" value="accepted">Accept</button>
+        <button name="response" value="declined">Decline</button>
+      </form>}
+      {!(invite.request_source === "volunteer_application" && invite.status === "pending") && canCancelInvitation(invite.status) && <form action={cancelInvitation}>
         <input type="hidden" name="eventId" value={event.id} />
         <input type="hidden" name="invitationId" value={invite.id} />
         <button className={styles.cancelButton} aria-label={`Cancel ${invite.status} request to ${invite.people?.full_name ?? "volunteer"}`}>Cancel</button>

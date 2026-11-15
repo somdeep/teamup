@@ -3,6 +3,7 @@ import type { volunteerSession } from "./portal-access";
 type VolunteerSession = Awaited<ReturnType<typeof volunteerSession>>;
 
 export type VolunteerInvitationStatus = "pending" | "accepted" | "declined";
+export type VolunteerRequestSource = "teacher_invitation" | "volunteer_application";
 
 export type VolunteerEvent = {
   id: string;
@@ -21,6 +22,8 @@ export type VolunteerInvitation = {
   id: string;
   status: VolunteerInvitationStatus;
   invited_at: string;
+  request_source: VolunteerRequestSource;
+  requested_role: string | null;
   events: VolunteerEvent | null;
 };
 
@@ -45,7 +48,8 @@ export function groupVolunteerInvitations(
   const byTime = (a: VolunteerInvitation, b: VolunteerInvitation) => eventTime(a) - eventTime(b)
     || a.id.localeCompare(b.id);
 
-  const opportunities = invitations.filter(item => item.status === "pending" && isFuture(item)).sort(byTime);
+  const opportunities = invitations.filter(item => item.status === "pending"
+    && item.request_source === "teacher_invitation" && isFuture(item)).sort(byTime);
   const commitments = invitations.filter(item => item.status === "accepted" && isFuture(item)).sort(byTime);
   const history = invitations.filter(item => item.status === "accepted" && isPast(item)).sort((a, b) => byTime(b, a));
   return {
@@ -59,7 +63,7 @@ export function groupVolunteerInvitations(
 export async function volunteerInvitations({ client, profile }: VolunteerSession) {
   if (!profile.person_id) return [];
   const { data, error } = await client.from("invitations")
-    .select("id,status,invited_at,events(id,title,description,city,venue_name,starts_at,ends_at,timezone,status,category)")
+    .select("id,status,invited_at,request_source,requested_role,events(id,title,description,city,venue_name,starts_at,ends_at,timezone,status,category)")
     .eq("person_id", profile.person_id)
     .order("invited_at", { ascending: false })
     .limit(1000);

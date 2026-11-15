@@ -41,6 +41,9 @@
 .smallButton { border: 1.5px solid #08767e; border-radius: 1.1rem; padding: .42rem .72rem; background: #effafa; color: #00565e; font-weight: 800; cursor: pointer; }
 .cancelButton { border: 1px solid #9b3d1a; border-radius: 1.1rem; padding: .38rem .62rem; color: #8b3212; background: #fff5ef; font-size: .78rem; font-weight: 800; cursor: pointer; }
 .cancelButton:hover { background: #ffe9dd; }
+.reviewActions { display: flex; flex-wrap: wrap; gap: .35rem; }
+.reviewActions button { border: 1px solid #12818a; border-radius: 999px; padding: .38rem .62rem; background: #eaf8f7; color: #08626b; font-size: .78rem; font-weight: 800; cursor: pointer; }
+.reviewActions button:last-child { border-color: #b65a36; background: #fff5ef; color: #8b3212; }
 .volunteerProfile { display: flex; align-items: center; gap: .55rem; border-radius: .65rem; }
 .volunteerProfile > div { min-width: 0; flex: 1; }
 .volunteerProfile:hover h3, .volunteerName:hover { color: #006b72; text-decoration: underline; }

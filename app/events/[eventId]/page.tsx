@@ -2,9 +2,10 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
-  CalendarDays, CalendarHeart, ChevronDown, ChevronRight, ClipboardCheck, Clock3, MapPin, Plus, UsersRound,
+  CalendarDays, CalendarHeart, ChevronDown, ChevronRight, ClipboardCheck, Clock3, MapPin, Plus, UserRound, UsersRound,
 } from "lucide-react";
 import { eventCircle, eventMessages } from "../../../lib/event-circle";
+import { eventResource } from "../../../lib/event-resources";
 import { portalNotifications } from "../../../lib/portal-notifications";
 import { portalSession } from "../../../lib/portal-access";
 import { isUuid } from "../../../lib/teacher-event";
@@ -13,6 +14,7 @@ import { AuthShell } from "../../auth/auth-shell";
 import { PortalHeaderActions } from "../../auth/portal-header-actions";
 import { InvitationList } from "../../teacher/portal-sections";
 import { MessageBoard } from "../message-board";
+import { EventResourcePanel } from "../event-resource";
 import styles from "../event-circle.module.css";
 
 export const metadata: Metadata = { title: "Event Circle | TeamUp", robots: { index: false } };
@@ -37,10 +39,11 @@ export default async function EventCirclePage({
   const { eventId } = await params;
   if (!isUuid(eventId)) notFound();
   const session = await portalSession();
-  const [event, messages, notifications] = await Promise.all([
+  const [event, messages, notifications, resource] = await Promise.all([
     eventCircle(session, eventId),
     eventMessages(session, eventId),
     portalNotifications(session.client, session.user.id, session.access),
+    eventResource(session, eventId),
   ]);
   if (!event) notFound();
 
@@ -60,19 +63,28 @@ export default async function EventCirclePage({
   };
   const confirmedInvitations = invitations.filter(invitation => invitation.status === "accepted");
   const spotsLeft = Math.max(0, event.volunteers_needed - event.confirmed_count);
-  const backHref = event.can_manage ? "/teacher?view=events" : "/invitations";
+  const backHref = event.can_manage ? "/teacher?view=events" : "/volunteer?view=requests&tab=confirmed";
 
-  return <AuthShell wide title="Event Circle" backHref={backHref} backLabel={event.can_manage ? "Back to My Events" : "Back to Invitations"}
+  return <AuthShell wide title="Event Circle" backHref={backHref} backLabel={event.can_manage ? "Back to My Events" : "Back to My Requests"}
     headerActions={<PortalHeaderActions notificationsHref={notifications.href} pendingCount={notifications.pending} notificationLabel={notifications.label} />}>
     <div className={styles.circle}>
       {notice === "message-posted" && <p className={styles.notice} role="status">Your message was posted.</p>}
       {notice === "message-failed" && <p className={styles.notice} role="alert">We couldn’t post that message. Please try again.</p>}
+      {notice === "image-invalid" && <p className={styles.notice} role="alert">Choose a JPG, PNG, WebP or GIF image no larger than 5 MB.</p>}
+      {notice === "image-failed" && <p className={styles.notice} role="alert">We couldn’t upload that image. Please try again.</p>}
+      {notice === "resource-saved" && <p className={styles.notice} role="status">The event resource was saved.</p>}
+      {notice === "resource-removed" && <p className={styles.notice} role="status">The event resource was removed.</p>}
+      {notice === "resource-invalid" && <p className={styles.notice} role="alert">Choose a PDF, image, text or Word document no larger than 10 MB.</p>}
+      {(notice === "resource-failed" || notice === "resource-remove-failed") && <p className={styles.notice} role="alert">We couldn’t update the event resource. Please try again.</p>}
       {notice === "created" && <p className={styles.notice} role="status">Event created. You can now invite volunteers.</p>}
       {notice === "invited" && <p className={styles.notice} role="status">Invitation sent in TeamUp.</p>}
       {notice === "already-invited" && <p className={styles.notice} role="status">This volunteer already has a request for this event.</p>}
       {notice === "invite-failed" && <p className={styles.notice} role="alert">We couldn’t send that request. Please try again.</p>}
       {notice === "request-cancelled" && <p className={styles.notice} role="status">The volunteer request was cancelled.</p>}
       {notice === "cancel-failed" && <p className={styles.notice} role="alert">We couldn’t cancel that request. It may already have been answered.</p>}
+      {notice === "application-accepted" && <p className={styles.notice} role="status">The volunteer application was accepted.</p>}
+      {notice === "application-declined" && <p className={styles.notice} role="status">The volunteer application was declined.</p>}
+      {notice === "review-failed" && <p className={styles.notice} role="alert">We couldn’t review that application. The event may be full or the request may have changed.</p>}
 
       {event.parent_event_id && <p className={styles.parentContext}>Part of {event.parent_can_access
         ? <Link href={`/events/${event.parent_event_id}`}>{event.parent_event_title ?? "parent event"}</Link>
@@ -86,10 +98,13 @@ export default async function EventCirclePage({
             <p><CalendarDays aria-hidden="true" /> {eventDate(event)}</p>
             <p><Clock3 aria-hidden="true" /> {eventTime(event)}</p>
             {(event.venue_name || event.city) && <p><MapPin aria-hidden="true" /> {[event.venue_name, event.city].filter(Boolean).join(" · ")}</p>}
+            {!event.can_manage && event.organizer_names.length > 0 && <p><UserRound aria-hidden="true" /> Organized by {event.organizer_names.join(" · ")}</p>}
           </div>
           {event.description && <p className={styles.description}>{event.description}</p>}
         </div>
       </section>
+
+      <EventResourcePanel eventId={event.id} resource={resource} canManage={event.can_manage} />
 
       <div className={styles.lotusDivider} aria-hidden="true"><span /><span>✦</span><span /></div>
 
@@ -128,8 +143,12 @@ export default async function EventCirclePage({
             {event.related_events.length ? event.related_events.map(related => {
               const content = <><span><strong>{related.title}</strong><small>{eventDate(related)}{related.city && ` · ${related.city}`}</small></span>
                 <span className={styles.relatedCount}>{related.confirmed_count}/{related.volunteers_needed}</span>{related.can_access && <ChevronRight aria-hidden="true" />}</>;
+              const volunteerCanApply = session.access.role === "volunteer" && related.status === "scheduled"
+                && related.confirmed_count < related.volunteers_needed;
               return related.can_access
                 ? <Link key={related.id} href={`/events/${related.id}`} className={styles.relatedRow}>{content}</Link>
+                : volunteerCanApply
+                  ? <Link key={related.id} href={`/volunteer?view=opportunity&event=${related.id}`} className={styles.relatedRow}>{content}</Link>
                 : <div key={related.id} className={styles.relatedRow}>{content}</div>;
             }) : <p className={styles.emptyRelated}>No related seva has been added yet.</p>}
           </div>

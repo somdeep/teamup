@@ -19,6 +19,10 @@ export function TeacherEventForm({ id, priority, parent }: { id: string; priorit
       {priority && <input type="hidden" name="priority" value="on" />}
       {parent && <p className={styles.notice}>Related seva for <strong>{parent.title}</strong></p>}
       <label className={styles.field}>Event name<input name="title" required maxLength={120} /></label>
+      {!priority && <label className={styles.field}>Type<select name="eventType" defaultValue="event">
+        <option value="event">Seva event</option>
+        <option value="course">Course</option>
+      </select></label>}
       <div className={styles.two}>
         <label className={styles.field}>Starts<input type="datetime-local" name="startsAt" required /></label>
         <label className={styles.field}>Ends<input type="datetime-local" name="endsAt" required /></label>
@@ -36,9 +40,13 @@ export function TeacherEventForm({ id, priority, parent }: { id: string; priorit
       </fieldset>
       <label className={styles.field}>Volunteers needed<input type="number" name="volunteers" defaultValue={1} min={1} max={1000} required /></label>
       <label className={styles.field}>Event details (optional)<textarea name="description" rows={4} maxLength={1000} /></label>
+      <label className={styles.field}>Volunteer resource (optional)<input name="resource" type="file"
+        accept="application/pdf,image/jpeg,image/png,image/webp,text/plain,.doc,.docx" />
+        <small>One PDF, image, text or Word document · up to 10 MB</small>
+      </label>
       {state.error && <p className={auth.error} role="alert">{state.error}</p>}
       <button className="landing-button primary" disabled={pending}>
-        {pending ? "Creating…" : parent ? "Create Related Seva" : priority ? "Create Priority Event" : "Create Event"}<ArrowRight aria-hidden="true" size={21} />
+        {pending ? "Creating…" : parent ? "Create Related Seva" : priority ? "Create Priority Event" : "Create Event or Course"}<ArrowRight aria-hidden="true" size={21} />
       </button>
     </form>
   );
