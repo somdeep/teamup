@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { ReactNode } from "react";
 import { ArrowRight, CalendarDays, CalendarPlus, ChevronRight, Inbox, MapPin, UsersRound, Zap } from "lucide-react";
 import { formatEventTime } from "../../lib/teacher-event";
 import { eventRoles, type DirectoryVolunteer, type MatchedVolunteer, type PortalEvent, type PortalInvitation } from "../../lib/teacher-data";
@@ -6,7 +7,7 @@ import { volunteerProfileHref } from "../../lib/volunteer-directory";
 import { cancelInvitation, inviteVolunteer } from "./actions";
 import styles from "./teacher.module.css";
 
-export function TeacherTiles({ pending }: { pending: number }) {
+export function TeacherTiles({ pending, fetchAssistant }: { pending: number; fetchAssistant?: ReactNode }) {
   const tiles = [
     { view: "create", name: "Create Event", icon: CalendarPlus },
     { view: "find", name: "Find Volunteers", icon: UsersRound },
@@ -15,13 +16,14 @@ export function TeacherTiles({ pending }: { pending: number }) {
     { view: "priority", name: "Priority Request", icon: Zap },
   ];
   return <nav aria-label="Teacher tools" className={styles.tiles}>
-    {tiles.map(({ view, name, icon: Icon }) => (
+    {tiles.map(({ view, name, icon: Icon }, index) => <div key={view} className={styles.tileSlot}>
       <Link key={view} href={`/teacher?view=${view}`} className={`${styles.tile} ${view === "priority" ? styles.priority : ""}`}>
         <Icon aria-hidden="true" size={31} strokeWidth={2.2} />
         <span>{name}</span>
         {view === "requests" && pending > 0 && <span className={styles.badge} aria-label={`${pending} pending`}>{pending}</span>}
       </Link>
-    ))}
+      {index === 1 && fetchAssistant}
+    </div>)}
   </nav>;
 }
 

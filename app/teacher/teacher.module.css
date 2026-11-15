@@ -1,6 +1,7 @@
 .stack { display: grid; gap: .85rem; min-inline-size: 0; }
 .stack h2 { font-size: clamp(1.3rem, 4.9vw, 1.75rem); font-weight: 800; line-height: 1.15; }
 .tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(.4rem, 2vw, .9rem); }
+.tileSlot { display: contents; }
 .tile {
   position: relative; display: grid; align-content: center; justify-items: center; gap: .55rem;
   min-height: clamp(6rem, 26vw, 9rem); min-inline-size: 0; padding: .7rem .25rem;

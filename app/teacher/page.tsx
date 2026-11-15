@@ -10,6 +10,7 @@ import { AuthShell } from "../auth/auth-shell";
 import { PortalHeaderActions } from "../auth/portal-header-actions";
 import { redirect } from "next/navigation";
 import { TeacherEventForm } from "./event-form";
+import { FetchAssistant } from "./fetch/fetch-assistant";
 import { EventList, InvitationList, TeacherTiles } from "./portal-sections";
 import {
   VolunteerDirectory, VolunteerDirectoryDetails,
@@ -117,7 +118,8 @@ export default async function TeacherPage({ searchParams }: { searchParams: Prom
     description={session.profile.full_name ? `Welcome, ${session.profile.full_name}` : "Welcome, Teacher"} headerActions={headerActions}>
     <div className={styles.stack}>
       {message && <p className={styles.notice} role="status">{message}</p>}
-      <TeacherTiles pending={requests.filter(item => item.invite.status === "pending").length} />
+      <TeacherTiles pending={requests.filter(item => item.invite.status === "pending").length}
+        fetchAssistant={<FetchAssistant events={upcoming.filter(event => event.can_manage)} />} />
       <section className={styles.stack} aria-labelledby="upcoming-heading">
         <h2 id="upcoming-heading">Upcoming Events</h2>
         <EventList events={upcoming.slice(0, 4)} />
