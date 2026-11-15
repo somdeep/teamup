@@ -18,10 +18,16 @@ begin
     raise exception 'A verified account is required.';
   end if;
 
-  select pr, p into account, person
-  from public.profiles pr join public.people p on p.id = pr.person_id
+  select pr.* into account
+  from public.profiles pr
   where pr.id = viewer
-  for update of pr, p;
+  for update of pr;
+  if not found then return null; end if;
+
+  select p.* into person
+  from public.people p
+  where p.id = account.person_id
+  for update of p;
   if not found then return null; end if;
 
   if profile is not null then
