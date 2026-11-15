@@ -47,7 +47,10 @@ export function EventList({ events }: { events: PortalEvent[] }) {
   </ul>;
 }
 
-export function InvitationList({ requests }: { requests: { event: PortalEvent; invite: PortalInvitation }[] }) {
+export function InvitationList({ requests, readOnly = false }: {
+  requests: { event: PortalEvent; invite: PortalInvitation }[];
+  readOnly?: boolean;
+}) {
   if (!requests.length) return <p className={styles.empty}>Volunteer invitations and replies appear here.</p>;
   return <ul className={styles.stack}>{requests.map(({ event, invite }) => (
     <li key={invite.id} className={styles.reply}>
@@ -55,13 +58,13 @@ export function InvitationList({ requests }: { requests: { event: PortalEvent; i
         {invite.people?.full_name ?? "Volunteer"}
       </Link><small>{event.title}</small>{invite.requested_role && <small>Requested role: {invite.requested_role}</small>}</span>
       <span className={styles.status} data-status={invite.status}>{invite.status}</span>
-      {invite.request_source === "volunteer_application" && invite.status === "pending" && <form action={reviewApplication} className={styles.reviewActions}>
+      {!readOnly && invite.request_source === "volunteer_application" && invite.status === "pending" && <form action={reviewApplication} className={styles.reviewActions}>
         <input type="hidden" name="eventId" value={event.id} />
         <input type="hidden" name="invitationId" value={invite.id} />
         <button name="response" value="accepted">Accept</button>
         <button name="response" value="declined">Decline</button>
       </form>}
-      {!(invite.request_source === "volunteer_application" && invite.status === "pending") && canCancelInvitation(invite.status) && <form action={cancelInvitation}>
+      {!readOnly && !(invite.request_source === "volunteer_application" && invite.status === "pending") && canCancelInvitation(invite.status) && <form action={cancelInvitation}>
         <input type="hidden" name="eventId" value={event.id} />
         <input type="hidden" name="invitationId" value={invite.id} />
         <button className={styles.cancelButton} aria-label={`Cancel ${invite.status} request to ${invite.people?.full_name ?? "volunteer"}`}>Cancel</button>

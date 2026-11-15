@@ -90,3 +90,10 @@ export async function eventMessages({ client }: PortalSession, eventId: string) 
     return { ...message, image_url: signed?.signedUrl ?? null };
   }));
 }
+
+export async function eventIsPast({ client }: PortalSession, eventId: string) {
+  const { data, error } = await client.rpc("teamup_event_is_past", { p_event_id: eventId });
+  if (error?.code === "PGRST202") return false;
+  if (error) throw new Error("Could not check the event status.");
+  return data === true;
+}

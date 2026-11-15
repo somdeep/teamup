@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { canCancelInvitation } from "../lib/teacher-data";
-import { isOpenEvent, readTeacherEvent } from "../lib/teacher-event";
+import { isOpenEvent, isPastEvent, readTeacherEvent } from "../lib/teacher-event";
 
 const now = Date.parse("2026-11-14T00:00:00Z");
 
@@ -53,6 +53,13 @@ test("invitation controls are shown only for future scheduled events", () => {
   assert.equal(isOpenEvent({ ...future, status: "cancelled" }, now), false);
   assert.equal(isOpenEvent(future, Date.parse(future.starts_at)), false);
   assert.equal(isOpenEvent({ ...future, starts_at: null }, now), false);
+});
+
+test("past events are read-only after their end time or completion", () => {
+  const now = Date.parse("2026-11-15T12:00:00Z");
+  assert.equal(isPastEvent({ status: "scheduled", ends_at: "2026-11-15T11:59:59Z" }, now), true);
+  assert.equal(isPastEvent({ status: "completed", ends_at: "2026-11-16T12:00:00Z" }, now), true);
+  assert.equal(isPastEvent({ status: "scheduled", ends_at: "2026-11-15T12:00:01Z" }, now), false);
 });
 
 test("teachers can cancel pending and accepted requests but retain declined history", () => {

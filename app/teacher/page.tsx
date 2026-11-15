@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { portalSession } from "../../lib/portal-access";
 import { sevaAvailabilityProfile } from "../../lib/seva-profile";
-import { teacherDirectory, teacherEvents, teacherVolunteer, teacherVolunteerPhone } from "../../lib/teacher-data";
+import { teacherDirectory, teacherEvents, teacherVolunteer, teacherVolunteerPastSeva, teacherVolunteerPhone } from "../../lib/teacher-data";
 import { isOpenEvent, isUuid } from "../../lib/teacher-event";
 import { readDirectoryFilter, volunteerDirectoryHref } from "../../lib/volunteer-directory";
 import { AuthShell } from "../auth/auth-shell";
@@ -93,12 +93,14 @@ export default async function TeacherPage({ searchParams }: { searchParams: Prom
     const personId = read("person");
     if (personId) {
       const volunteer = isUuid(personId) ? await teacherVolunteer(session, personId) : null;
-      const phone = volunteer ? await teacherVolunteerPhone(session, personId) : null;
+      const [phone, pastSeva] = volunteer ? await Promise.all([
+        teacherVolunteerPhone(session, personId), teacherVolunteerPastSeva(session, personId),
+      ]) : [null, []];
       return <AuthShell wide beforeTitle={volunteer ? <VolunteerProfileHero volunteer={volunteer} /> : undefined}
         title={volunteer?.full_name ?? "Profile unavailable"}
         description={volunteer ? <VolunteerProfileAvailability volunteer={volunteer} /> : undefined}
         backHref={volunteerDirectoryHref(filter)} backLabel="Back to Find Volunteers" headerActions={headerActions}>
-        {volunteer ? <VolunteerDirectoryDetails volunteer={volunteer} event={forEvent} events={inviteEvents} phone={phone} />
+        {volunteer ? <VolunteerDirectoryDetails volunteer={volunteer} event={forEvent} events={inviteEvents} phone={phone} pastSeva={pastSeva} />
           : <p className={styles.empty}>This volunteer profile is unavailable.</p>}
       </AuthShell>;
     }

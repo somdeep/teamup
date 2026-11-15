@@ -60,6 +60,10 @@ export function isOpenEvent(event: { status: string; starts_at: string | null },
   return event.status === "scheduled" && !!event.starts_at && Date.parse(event.starts_at) > now;
 }
 
+export function isPastEvent(event: { status: string; ends_at: string | null }, now = Date.now()) {
+  return event.status === "completed" || (!!event.ends_at && Date.parse(event.ends_at) <= now);
+}
+
 export function formatEventTime(event: { starts_at: string | null; timezone: string }) {
   if (!event.starts_at) return "Time to be confirmed";
   return new Intl.DateTimeFormat("en-CA", {

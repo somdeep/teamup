@@ -5,7 +5,7 @@ import {
   Laptop, MapPin, Megaphone, Music2, Palette, UserPlus, UserRound, UsersRound, Wrench,
   type LucideIcon,
 } from "lucide-react";
-import type { PortalEvent, VolunteerDirectoryProfile } from "../../lib/teacher-data";
+import type { PortalEvent, VolunteerDirectoryProfile, VolunteerPastSeva } from "../../lib/teacher-data";
 import { directoryAvailability, volunteerDirectoryHref, type DirectoryFilter } from "../../lib/volunteer-directory";
 import { cancelInvitation, inviteVolunteer } from "./actions";
 import { DirectoryFilters } from "./directory-filters";
@@ -112,11 +112,12 @@ export function VolunteerDirectory({ filter, events, event, volunteers, hasNext 
   </div>;
 }
 
-export function VolunteerDirectoryDetails({ volunteer, event, events, phone }: {
+export function VolunteerDirectoryDetails({ volunteer, event, events, phone, pastSeva }: {
   volunteer: VolunteerDirectoryProfile;
   event?: PortalEvent;
   events: PortalEvent[];
   phone: string | null;
+  pastSeva: VolunteerPastSeva[];
 }) {
   const phoneHref = phone?.replace(/[^\d+*#;,]/g, "");
   const availability = volunteer.availability_patterns.length
@@ -129,13 +130,26 @@ export function VolunteerDirectoryDetails({ volunteer, event, events, phone }: {
     <div className={styles.profileStats}>
       <div><CalendarDays aria-hidden="true" size={28} /><span><strong>Availability</strong><small>{availability}</small></span></div>
       <div><MapPin aria-hidden="true" size={28} /><span><strong>Location</strong><small>{volunteer.city || "Not provided"}</small></span></div>
-      <div><HeartHandshake aria-hidden="true" size={28} /><span><strong>Past Seva</strong><small>{volunteer.past_seva_count} {volunteer.past_seva_count === 1 ? "event" : "events"}</small></span></div>
+      <a href="#past-seva"><HeartHandshake aria-hidden="true" size={28} /><span><strong>Past Seva</strong><small>{volunteer.past_seva_count} {volunteer.past_seva_count === 1 ? "event" : "events"}</small></span></a>
     </div>
     {volunteer.emergency_seva && <p className={styles.emergency}><strong>Open to last-minute seva</strong></p>}
     {volunteer.interests.length > 0 && <div className={styles.profilePanel}>
       <h2>Interested in learning</h2>
       <p>{volunteer.interests.join(" · ")}</p>
     </div>}
+    <section className={styles.profilePanel} id="past-seva" aria-labelledby="past-seva-heading">
+      <h2 id="past-seva-heading">Past Seva</h2>
+      {pastSeva.length ? <ol className={styles.pastSevaList}>{pastSeva.map(item => (
+        <li key={item.event_id}>
+          <details>
+            <summary><span>{item.title}</span><time dateTime={item.ends_at}>{new Intl.DateTimeFormat("en-CA", {
+              dateStyle: "medium", timeZone: item.timezone,
+            }).format(new Date(item.ends_at))}</time></summary>
+            <p>{[item.role, item.venue_name, item.city].filter(Boolean).join(" · ") || "Completed seva event"}</p>
+          </details>
+        </li>
+      ))}</ol> : <p>{volunteer.past_seva_count > 0 ? "Past event details are not available yet." : "No completed seva recorded yet."}</p>}
+    </section>
     {event && <p className={styles.eventContext}><CalendarDays size={17} aria-hidden="true" /> Request for <strong>{event.title}</strong></p>}
     <div className={styles.detailsActions}>
       {event ? <InviteButton volunteer={volunteer} event={event} request /> : events.length > 0 ? (

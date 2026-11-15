@@ -4,7 +4,7 @@ import type { portalSession, volunteerSession } from "./portal-access";
 type PortalSession = Awaited<ReturnType<typeof portalSession>>;
 type VolunteerSession = Awaited<ReturnType<typeof volunteerSession>>;
 
-const resourceTypes = new Map([
+export const resourceTypes = new Map([
   ["application/pdf", "pdf"],
   ["image/jpeg", "jpg"],
   ["image/png", "png"],
@@ -45,6 +45,21 @@ export function readEventResource(value: FormDataEntryValue | null) {
   }
   const fileName = value.name.split(/[\\/]/).pop()?.trim().slice(0, 200) || `Event resource.${extension}`;
   return { file: value, extension, fileName } as const;
+}
+
+export function readEventResourceMetadata(form: FormData) {
+  const path = form.get("resourcePath");
+  const fileName = form.get("resourceName");
+  const mimeType = form.get("resourceMime");
+  const sizeValue = form.get("resourceSize");
+  const fileSize = typeof sizeValue === "string" ? Number(sizeValue) : Number.NaN;
+  if (typeof path !== "string" || !path || path.length > 500
+    || typeof fileName !== "string" || !fileName.trim() || fileName.length > 200
+    || typeof mimeType !== "string" || !resourceTypes.has(mimeType)
+    || !Number.isInteger(fileSize) || fileSize < 1 || fileSize > 10 * 1024 * 1024) {
+    return { error: "Invalid event resource metadata." } as const;
+  }
+  return { path, fileName: fileName.trim(), mimeType, fileSize } as const;
 }
 
 export async function uploadEventResource(

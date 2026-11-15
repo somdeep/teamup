@@ -4,11 +4,11 @@ import { notFound } from "next/navigation";
 import {
   CalendarDays, CalendarHeart, ChevronDown, ChevronRight, ClipboardCheck, Clock3, MapPin, Plus, UserRound, UsersRound,
 } from "lucide-react";
-import { eventCircle, eventMessages } from "../../../lib/event-circle";
+import { eventCircle, eventIsPast, eventMessages } from "../../../lib/event-circle";
 import { eventResource } from "../../../lib/event-resources";
 import { portalNotifications } from "../../../lib/portal-notifications";
 import { portalSession } from "../../../lib/portal-access";
-import { isUuid } from "../../../lib/teacher-event";
+import { isPastEvent as hasEventEnded, isUuid } from "../../../lib/teacher-event";
 import type { PortalEvent } from "../../../lib/teacher-data";
 import { AuthShell } from "../../auth/auth-shell";
 import { PortalHeaderActions } from "../../auth/portal-header-actions";
@@ -39,13 +39,15 @@ export default async function EventCirclePage({
   const { eventId } = await params;
   if (!isUuid(eventId)) notFound();
   const session = await portalSession();
-  const [event, messages, notifications, resource] = await Promise.all([
+  const [event, messages, notifications, resource, databaseSaysPast] = await Promise.all([
     eventCircle(session, eventId),
     eventMessages(session, eventId),
     portalNotifications(session.client, session.user.id, session.access),
     eventResource(session, eventId),
+    eventIsPast(session, eventId),
   ]);
   if (!event) notFound();
+  const isPastEvent = databaseSaysPast || hasEventEnded(event);
 
   const { notice } = await searchParams;
   let invitations: PortalEvent["invitations"] = [];
@@ -85,6 +87,7 @@ export default async function EventCirclePage({
       {notice === "application-accepted" && <p className={styles.notice} role="status">The volunteer application was accepted.</p>}
       {notice === "application-declined" && <p className={styles.notice} role="status">The volunteer application was declined.</p>}
       {notice === "review-failed" && <p className={styles.notice} role="alert">We couldn’t review that application. The event may be full or the request may have changed.</p>}
+      {isPastEvent && <p className={styles.notice} role="status">This event has ended. Its details are read-only, but event-circle members can continue using the message board.</p>}
 
       {event.parent_event_id && <p className={styles.parentContext}>Part of {event.parent_can_access
         ? <Link href={`/events/${event.parent_event_id}`}>{event.parent_event_title ?? "parent event"}</Link>
@@ -104,7 +107,7 @@ export default async function EventCirclePage({
         </div>
       </section>
 
-      <EventResourcePanel eventId={event.id} resource={resource} canManage={event.can_manage} />
+      <EventResourcePanel eventId={event.id} resource={resource} canManage={event.can_manage && !isPastEvent} />
 
       <div className={styles.lotusDivider} aria-hidden="true"><span /><span>✦</span><span /></div>
 
@@ -119,14 +122,14 @@ export default async function EventCirclePage({
           <div className={styles.collapsibleContent}>
             {event.can_manage
               ? confirmedInvitations.length
-                ? <InvitationList requests={confirmedInvitations.map(invite => ({ event: invitationEvent, invite }))} />
+                ? <InvitationList requests={confirmedInvitations.map(invite => ({ event: invitationEvent, invite }))} readOnly={isPastEvent} />
                 : <p className={styles.emptyRelated}>No volunteers are confirmed yet.</p>
               : <p className={styles.emptyRelated}>{event.confirmed_count
                 ? `${event.confirmed_count} ${event.confirmed_count === 1 ? "volunteer is" : "volunteers are"} confirmed for this event.`
                 : "No volunteers are confirmed yet."}</p>}
           </div>
         </details>
-        {event.can_manage && <Link className={styles.inviteVolunteers} href={`/teacher?view=find&forEvent=${event.id}`}
+        {event.can_manage && !isPastEvent && <Link className={styles.inviteVolunteers} href={`/teacher?view=find&forEvent=${event.id}`}
           aria-label={`Invite volunteers to ${event.title}`} title="Invite volunteers">
           <Plus aria-hidden="true" />
         </Link>}
@@ -153,7 +156,7 @@ export default async function EventCirclePage({
             }) : <p className={styles.emptyRelated}>No related seva has been added yet.</p>}
           </div>
         </details>
-        {event.can_manage && event.related_events.length < 5 && <Link className={styles.addRelated}
+        {event.can_manage && !isPastEvent && event.related_events.length < 5 && <Link className={styles.addRelated}
           href={`/teacher?view=create&parentEvent=${event.id}`} aria-label={`Add related seva to ${event.title}`} title="Add related seva">
           <Plus aria-hidden="true" />
         </Link>}
@@ -166,7 +169,7 @@ export default async function EventCirclePage({
           <ChevronDown className={styles.chevron} aria-hidden="true" />
         </summary>
         <div className={styles.collapsibleContent}>
-          <InvitationList requests={invitations.map(invite => ({ event: invitationEvent, invite }))} />
+          <InvitationList requests={invitations.map(invite => ({ event: invitationEvent, invite }))} readOnly={isPastEvent} />
         </div>
       </details>}
 

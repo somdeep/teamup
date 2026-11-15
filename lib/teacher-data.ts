@@ -32,6 +32,17 @@ export type VolunteerDirectoryProfile = DirectoryVolunteer & {
   past_seva_count: number;
   has_photo: boolean;
 };
+export type VolunteerPastSeva = {
+  event_id: string;
+  title: string;
+  starts_at: string;
+  ends_at: string;
+  timezone: string;
+  city: string | null;
+  venue_name: string | null;
+  category: string | null;
+  role: string | null;
+};
 export type MatchedVolunteer = DirectoryVolunteer & { score: number; reasons: string[]; invitation_status: InvitationStatus | null };
 
 export function canCancelInvitation(status: InvitationStatus) {
@@ -77,6 +88,13 @@ export async function teacherVolunteerPhone({ client }: TeacherSession, personId
   const { data, error } = await client.rpc("teamup_volunteer_phone", { p_person_id: personId });
   if (error) throw new Error("Could not load the volunteer contact option.");
   return typeof data === "string" && data.trim() ? data.trim() : null;
+}
+
+export async function teacherVolunteerPastSeva({ client }: TeacherSession, personId: string) {
+  const { data, error } = await client.rpc("teamup_volunteer_past_seva", { p_person_id: personId });
+  if (error?.code === "PGRST202") return [];
+  if (error) throw new Error("Could not load the volunteer’s past seva.");
+  return (data ?? []) as VolunteerPastSeva[];
 }
 
 export async function teacherMatches({ client }: TeacherSession, eventId: string) {
