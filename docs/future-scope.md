@@ -9,3 +9,9 @@ Give the volunteer event-scoped controls for managing their event. Before implem
 ## Member accounts
 
 Add a Member signup and landing experience after the Teacher and Volunteer flows are complete. Define what a Member can do beyond maintaining a basic profile, then expose Member as a signup choice and route Member logins to that experience. Existing database support for the Member role remains in place during V1, but new users can only choose Teacher or Volunteer.
+
+## Teachers who also volunteer
+
+Let a Teacher opt into volunteering without changing their primary Teacher account role or Teacher Portal landing page. Add an **Also available to volunteer** account setting that creates or updates the linked `volunteer_profiles` record, marks the person as a volunteer, and collects their skills, interests, availability, and emergency-seva preference.
+
+Dual-participation Teachers should appear in the volunteer directory for other Teachers and be able to receive, accept, and decline event invitations. Keep the current self-exclusion in invitation searches so a Teacher cannot invite themselves; provide a separate way to preview their own volunteer profile. Show incoming volunteer invitations alongside the Teacher’s outgoing request notifications.
