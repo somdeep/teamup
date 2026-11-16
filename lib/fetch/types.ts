@@ -4,7 +4,7 @@ export type FetchAnimation = "idle" | "playful" | "searching" | "digging" | "suc
 
 export type FetchEvent = Pick<PortalEvent,
   "id" | "title" | "city" | "starts_at" | "timezone" | "required_skills" | "volunteers_needed" | "invitations" | "can_manage"
->;
+> & { displayLabel?: string };
 
 export type FetchIntent = {
   raw: string;
@@ -15,6 +15,16 @@ export type FetchIntent = {
   urgentOnly: boolean;
   skillSource: "query" | "event" | null;
   clarification: string | null;
+};
+
+export type FetchInterpretationSource = "ai" | "deterministic";
+
+export type FetchInterpretationResult = {
+  ok: boolean;
+  intent?: FetchIntent;
+  source: FetchInterpretationSource;
+  warning?: string;
+  error?: string;
 };
 
 export type ExactMatchRow = {

@@ -1,6 +1,6 @@
 # Fetch LLM Integration Plan
 
-**Status:** Proposed — revised after architecture review
+**Status:** Hackathon MVP implemented locally; broader roadmap remains proposed
 
 **Created:** November 14, 2026
 
@@ -21,6 +21,24 @@ TeamUp's Supabase layer remains responsible for event access, availability match
 The guiding principle remains:
 
 > AI understands the request. TeamUp's backend decides which volunteers actually match.
+
+## Hackathon implementation checkpoint
+
+The demo slice deliberately implements less than the full roadmap below:
+
+- OpenAI Responses API, called only from an authenticated Next.js server action.
+- One small, configurable structured-output model (`gpt-4o-mini` by default).
+- One manageable event, one canonical skill, and one quantity from 1–20.
+- A strict JSON schema followed by TeamUp allow-list validation.
+- The existing interpretation preview, matching, availability labels, volunteer selection, and explicit invitation confirmation.
+- `ai-first` and `deterministic` server-side modes, with automatic deterministic fallback on timeout, refusal, provider error, malformed output, or rejected values.
+- A 12-second provider timeout and no artificial UI delay.
+- An atomic Supabase-backed global limit of 50 AI interpretations per UTC hour, with deterministic fallback after the cap.
+- One additive migration for an aggregate global rate-limit counter; no volunteer information is sent to the provider.
+
+This slice intentionally defers multi-skill quantities, exclusions, location reasoning, conversational memory, new languages, analytics, provider benchmarking, and dashboard work. The larger plan remains useful future scope rather than a promise for the hackathon demo.
+
+The local app cannot demonstrate a real provider response until `OPENAI_API_KEY` is supplied in `.env.local`. With no key it continues through the deterministic path, allowing the rest of the demo and invitation workflow to keep working.
 
 ## Goals
 

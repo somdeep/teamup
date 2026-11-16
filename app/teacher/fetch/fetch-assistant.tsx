@@ -3,9 +3,8 @@
 import Link from "next/link";
 import { CalendarDays, Check, Mic, PawPrint, Send, Sparkles, X } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { parseFetchIntent } from "../../../lib/fetch/intent";
-import type { FetchAnimation, FetchEvent, FetchIntent, FetchMatch } from "../../../lib/fetch/types";
-import { searchFetchVolunteers, sendFetchInvitations } from "./actions";
+import type { FetchAnimation, FetchEvent, FetchIntent, FetchInterpretationSource, FetchMatch } from "../../../lib/fetch/types";
+import { interpretFetchQuery, searchFetchVolunteers, sendFetchInvitations } from "./actions";
 import styles from "./fetch-assistant.module.css";
 
 type SpeechResult = { isFinal: boolean; 0: { transcript: string } };
@@ -48,13 +47,12 @@ const quickRequests = [
   ["Setup help", "Find setup helpers"],
 ] as const;
 
-const wait = (milliseconds: number) => new Promise(resolve => window.setTimeout(resolve, milliseconds));
-
 function initials(name: string) {
   return name.trim().split(/\s+/u).slice(0, 2).map(part => part[0]).join("").toLocaleUpperCase();
 }
 
 function eventLabel(event: FetchEvent) {
+  if (event.displayLabel) return event.displayLabel;
   if (!event.starts_at) return event.title;
   const when = new Intl.DateTimeFormat("en-CA", {
     month: "short", day: "numeric", hour: "numeric", minute: "2-digit", timeZone: event.timezone,
@@ -74,6 +72,7 @@ export function FetchAssistant({ events }: { events: FetchEvent[] }) {
   const [query, setQuery] = useState("");
   const [selectedEventId, setSelectedEventId] = useState(events[0]?.id ?? "");
   const [intent, setIntent] = useState<FetchIntent | null>(null);
+  const [interpretationSource, setInterpretationSource] = useState<FetchInterpretationSource | null>(null);
   const [matches, setMatches] = useState<FetchMatch[]>([]);
   const [total, setTotal] = useState(0);
   const [selected, setSelected] = useState<string[]>([]);
@@ -81,6 +80,7 @@ export function FetchAssistant({ events }: { events: FetchEvent[] }) {
   const [reviewing, setReviewing] = useState(false);
   const [sending, setSending] = useState(false);
   const [notice, setNotice] = useState("Type your request, or use the microphone in a supported browser.");
+  const [interpretationWarning, setInterpretationWarning] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [listening, setListening] = useState(false);
@@ -154,49 +154,56 @@ export function FetchAssistant({ events }: { events: FetchEvent[] }) {
   function chooseEvent(eventId: string) {
     setSelectedEventId(eventId);
     setIntent(null);
+    setInterpretationSource(null);
     setMatches([]);
     setSelected([]);
     setReviewing(false);
     setError(null);
+    setInterpretationWarning(null);
     setSuccess(null);
     setNotice("Event changed. Ask Fetch who you need.");
   }
 
   async function runSearch(request = query) {
     if (searching || sending) return;
-    const parsed = parseFetchIntent(request, events, selectedEventId);
-    setIntent(parsed);
+    setSearching(true);
+    setIntent(null);
+    setInterpretationSource(null);
     setError(null);
+    setInterpretationWarning(null);
     setSuccess(null);
     setReviewing(false);
     setSelected([]);
-    if (parsed.eventId && parsed.eventId !== selectedEventId) setSelectedEventId(parsed.eventId);
-    if (parsed.clarification) {
-      setMatches([]);
-      setTotal(0);
-      setError(parsed.clarification);
-      setAnimation("no-results");
-      setDogLine("I need one more clue. 🐾");
-      setDogSubline(parsed.clarification);
-      window.setTimeout(() => restoreIdle(), 2500);
-      return;
-    }
-
-    setSearching(true);
     setMatches([]);
     setTotal(0);
-    setNotice("Checking actual TeamUp skills and availability…");
+    setNotice("Understanding your request…");
     setAnimation("searching");
     setDogLine("On my way! 🐾");
-    setDogSubline("Checking skills and the selected event time.");
+    setDogSubline("Understanding the event, skill, and quantity.");
     try {
-      const resultPromise = searchFetchVolunteers(parsed);
-      await wait(450);
+      const interpretation = await interpretFetchQuery(request, selectedEventId);
+      if (!interpretation.ok || !interpretation.intent) {
+        throw new Error(interpretation.error ?? "Fetch couldn’t understand that request.");
+      }
+      const parsed = interpretation.intent;
+      setIntent(parsed);
+      setInterpretationSource(interpretation.source);
+      if (parsed.eventId && parsed.eventId !== selectedEventId) setSelectedEventId(parsed.eventId);
+      if (interpretation.warning) setInterpretationWarning(interpretation.warning);
+      if (parsed.clarification) {
+        setError(parsed.clarification);
+        setAnimation("no-results");
+        setDogLine("I need one more clue. 🐾");
+        setDogSubline(parsed.clarification);
+        window.setTimeout(() => restoreIdle(), 2500);
+        return;
+      }
+
       setAnimation("digging");
       setDogLine("Sniff sniff…");
       setDogSubline("Separating full schedule matches from general preferences.");
-      const result = await resultPromise;
-      await wait(350);
+      if (!interpretation.warning) setNotice("Checking actual TeamUp skills and availability…");
+      const result = await searchFetchVolunteers(parsed);
       if (!result.ok) throw new Error(result.error ?? "Fetch couldn’t complete the search.");
       setMatches(result.matches);
       setTotal(result.total);
@@ -393,7 +400,7 @@ export function FetchAssistant({ events }: { events: FetchEvent[] }) {
         </label>
 
         {intent && !intent.clarification && <div className={styles.interpretation} aria-label="Fetch interpretation">
-          <strong>Fetch understood</strong>
+          <strong>Fetch understood {interpretationSource === "ai" ? "with AI" : "with the standard interpreter"}</strong>
           <div>
             <span>{intent.eventTitle}</span>
             {intent.skills.map(skill => <span key={skill}>{skill}</span>)}
@@ -403,6 +410,7 @@ export function FetchAssistant({ events }: { events: FetchEvent[] }) {
         </div>}
 
         {error && <p className={styles.error} role="alert">{error}</p>}
+        {interpretationWarning && <p className={styles.warning} role="status">{interpretationWarning}</p>}
         {success && <p className={styles.success} role="status"><Check aria-hidden="true" size={17} /> {success}</p>}
 
         {(matches.length > 0 || searching || intent && !intent.clarification && !error) && <section className={styles.results} aria-live="polite" aria-busy={searching}>

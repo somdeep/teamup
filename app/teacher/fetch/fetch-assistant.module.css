@@ -71,8 +71,9 @@
 .interpretation > strong { color: #14715e; font-size: .75rem; }
 .interpretation > div { display: flex; flex-wrap: wrap; gap: .35rem; margin-top: .45rem; }
 .interpretation span { padding: .3rem .48rem; border: 1px solid #cce5dc; border-radius: 2rem; color: #1b605e; background: #fff; font-size: .64rem; }
-.error, .success { margin: .55rem 0 0; padding: .65rem .75rem; border-radius: .7rem; font-size: .74rem; }
+.error, .warning, .success { margin: .55rem 0 0; padding: .65rem .75rem; border-radius: .7rem; font-size: .74rem; }
 .error { border: 1px solid #efc095; color: #843f13; background: #fff7ed; }
+.warning { border: 1px solid #ead27e; color: #664d03; background: #fff9dd; }
 .success { display: flex; align-items: center; gap: .4rem; border: 1px solid #b5dfca; color: #176345; background: #effbf5; }
 
 .results { margin-top: .6rem; padding: .8rem .75rem; border: 1px solid #d6e9e7; border-radius: .9rem; background: #fff; }

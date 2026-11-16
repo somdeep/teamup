@@ -4,7 +4,7 @@ import Link from "next/link";
 import { portalSession } from "../../lib/portal-access";
 import { sevaAvailabilityProfile } from "../../lib/seva-profile";
 import { teacherDirectory, teacherEvents, teacherVolunteer, teacherVolunteerPastSeva, teacherVolunteerPhone } from "../../lib/teacher-data";
-import { isOpenEvent, isUuid } from "../../lib/teacher-event";
+import { formatEventTime, isOpenEvent, isUuid } from "../../lib/teacher-event";
 import { readDirectoryFilter, volunteerDirectoryHref } from "../../lib/volunteer-directory";
 import { AuthShell } from "../auth/auth-shell";
 import { PortalHeaderActions } from "../auth/portal-header-actions";
@@ -121,7 +121,10 @@ export default async function TeacherPage({ searchParams }: { searchParams: Prom
     <div className={styles.stack}>
       {message && <p className={styles.notice} role="status">{message}</p>}
       <TeacherTiles pending={requests.filter(item => item.invite.status === "pending").length}
-        fetchAssistant={<FetchAssistant events={upcoming.filter(event => event.can_manage)} />} />
+        fetchAssistant={<FetchAssistant events={upcoming.filter(event => event.can_manage).map(event => ({
+          ...event,
+          displayLabel: `${event.title} · ${formatEventTime(event)}`,
+        }))} />} />
       <section className={styles.stack} aria-labelledby="upcoming-heading">
         <h2 id="upcoming-heading">Upcoming Events</h2>
         <EventList events={upcoming.slice(0, 4)} />

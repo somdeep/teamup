@@ -2,19 +2,98 @@
 
 import { revalidatePath } from "next/cache";
 import { combineFetchMatches } from "../../../lib/fetch/matching";
+import { parseFetchIntent } from "../../../lib/fetch/intent";
 import type {
-  ExactMatchRow, FetchIntent, FetchInvitationResult, FetchSearchResult, PreferenceMatchRow,
+  ExactMatchRow, FetchEvent, FetchIntent, FetchInterpretationResult, FetchInvitationResult, FetchSearchResult, PreferenceMatchRow,
 } from "../../../lib/fetch/types";
 import { teacherSession } from "../../../lib/portal-access";
 import { sevaSkills } from "../../../lib/signup-profile";
 import { teacherEvents } from "../../../lib/teacher-data";
 import { isOpenEvent, isUuid } from "../../../lib/teacher-event";
+import { interpretWithOpenAi } from "./openai-intent";
 
 function validIntent(intent: FetchIntent) {
   return intent.eventId && isUuid(intent.eventId)
     && intent.skills.length > 0
     && intent.skills.every(skill => sevaSkills.some(option => option === skill))
     && (intent.quantity === null || Number.isInteger(intent.quantity) && intent.quantity >= 1 && intent.quantity <= 20);
+}
+
+function interpretationMode() {
+  const configured = process.env.FETCH_INTERPRETATION_MODE?.trim().toLocaleLowerCase();
+  if (configured === "deterministic" || configured === "ai-first") return configured;
+  return process.env.OPENAI_API_KEY ? "ai-first" : "deterministic";
+}
+
+type FetchRateLimitClaim = {
+  allowed?: boolean;
+  remaining?: number;
+  retry_after_seconds?: number;
+};
+
+type LocalFetchRateLimit = { windowStartedAt: number; count: number };
+const fetchGlobal = globalThis as typeof globalThis & { __teamupFetchLlmRateLimit?: LocalFetchRateLimit };
+const FETCH_REQUESTS_PER_HOUR = 50;
+
+function claimLocalDevelopmentFetchRequest(now = Date.now()): FetchRateLimitClaim {
+  const hour = 60 * 60 * 1000;
+  const windowStartedAt = Math.floor(now / hour) * hour;
+  const current = fetchGlobal.__teamupFetchLlmRateLimit;
+  const state = !current || current.windowStartedAt !== windowStartedAt
+    ? { windowStartedAt, count: 0 }
+    : current;
+  const retryAfter = Math.max(1, Math.ceil((windowStartedAt + hour - now) / 1000));
+  if (state.count >= FETCH_REQUESTS_PER_HOUR) return { allowed: false, remaining: 0, retry_after_seconds: retryAfter };
+  state.count += 1;
+  fetchGlobal.__teamupFetchLlmRateLimit = state;
+  return { allowed: true, remaining: FETCH_REQUESTS_PER_HOUR - state.count, retry_after_seconds: retryAfter };
+}
+
+export async function interpretFetchQuery(raw: string, selectedEventId?: string): Promise<FetchInterpretationResult> {
+  const query = raw.trim().slice(0, 350);
+  const session = await teacherSession();
+  const manageable = (await teacherEvents(session))
+    .filter(event => event.can_manage && isOpenEvent(event)) as FetchEvent[];
+
+  const deterministic = () => parseFetchIntent(query, manageable, selectedEventId);
+  if (!query || !manageable.length) {
+    return { ok: true, intent: deterministic(), source: "deterministic" };
+  }
+  if (interpretationMode() === "deterministic") {
+    return { ok: true, intent: deterministic(), source: "deterministic" };
+  }
+
+  const { data: claimData, error: claimError } = await session.client.rpc("teamup_claim_fetch_llm_request", { p_limit: FETCH_REQUESTS_PER_HOUR });
+  const claim = claimError && process.env.NODE_ENV !== "production"
+    ? claimLocalDevelopmentFetchRequest()
+    : claimData as FetchRateLimitClaim | null;
+  if (!claim) {
+    return {
+      ok: true,
+      intent: deterministic(),
+      source: "deterministic",
+      warning: "The global AI usage guard is unavailable, so Fetch used its standard interpreter without calling AI.",
+    };
+  }
+  if (!claim.allowed) {
+    const minutes = Math.max(1, Math.ceil((claim.retry_after_seconds ?? 3600) / 60));
+    return {
+      ok: true,
+      intent: deterministic(),
+      source: "deterministic",
+      warning: `The shared Fetch AI limit of ${FETCH_REQUESTS_PER_HOUR} requests per hour has been reached. Try AI again in about ${minutes} minute${minutes === 1 ? "" : "s"}; standard interpretation is still available.`,
+    };
+  }
+
+  const ai = await interpretWithOpenAi(query, manageable, selectedEventId);
+  if (ai.ok) return { ok: true, intent: ai.intent, source: "ai" };
+
+  return {
+    ok: true,
+    intent: deterministic(),
+    source: "deterministic",
+    warning: `${ai.error} Fetch used its standard interpreter instead.`,
+  };
 }
 
 export async function searchFetchVolunteers(intent: FetchIntent): Promise<FetchSearchResult> {

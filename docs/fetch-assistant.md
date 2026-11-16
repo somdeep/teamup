@@ -2,7 +2,27 @@
 
 Fetch is TeamUp's friendly animated dog assistant for teachers. It is embedded in the existing Teacher Portal rather than operating as a separate chatbot, dashboard, or login.
 
-The current implementation is documented here. The proposed LLM evolution, requested-skill matching change, rollout stages, and trade-off decisions are maintained separately in [Fetch LLM Integration Plan](fetch-llm-integration-plan.md). That plan is approval-gated and does not imply that an external model or database migration has been enabled.
+The current implementation is documented here. The proposed LLM evolution, requested-skill matching change, rollout stages, and trade-off decisions are maintained separately in [Fetch LLM Integration Plan](fetch-llm-integration-plan.md).
+
+## Hackathon AI slice
+
+Fetch now has an optional server-side AI interpretation path for the hackathon demo. It uses the OpenAI Responses API with strict structured output to interpret exactly one manageable event, one canonical TeamUp skill, and one requested quantity. The result is checked again against the teacher's server-loaded event IDs, the `sevaSkills` allow-list, and the 1–20 quantity limit before it can reach matching.
+
+The model receives only the teacher's short request, a minimized list of manageable events, the selected event ID, and approved skill labels. It never receives volunteer names, profiles, contact details, availability, invitations, credentials, or session tokens. Supabase still performs matching and authorization, and the existing explicit review remains the only route to sending invitations.
+
+Configuration is server-only:
+
+```dotenv
+OPENAI_API_KEY=your-server-side-key
+FETCH_OPENAI_MODEL=gpt-4o-mini
+FETCH_INTERPRETATION_MODE=ai-first
+```
+
+`FETCH_INTERPRETATION_MODE=deterministic` is the instant rollback. If the AI call times out, is refused, returns malformed data, or fails validation, Fetch displays a useful fallback notice and runs the deterministic parser. An AI failure is never displayed as an empty volunteer result.
+
+AI usage is capped globally at 50 interpretation calls per UTC hour. The authenticated server action atomically claims a slot through `teamup_claim_fetch_llm_request` before contacting OpenAI. The counter is shared across teachers and application instances, so it remains effective across hosted server instances. When the limit is reached—or when the guard itself is unavailable—Fetch does not call the provider and safely uses deterministic interpretation.
+
+For local-only testing before that migration is applied, development mode uses a process-local 50-per-hour counter. It resets when the dev server restarts and is intentionally never used in production.
 
 ## Current implementation
 
@@ -11,7 +31,7 @@ The local implementation adds:
 - An orange **Ask Fetch** tile in the Teacher Portal and a persistent floating dog launcher on that page.
 - The prototype's original idle, playful, searching, digging, no-results, sleeping, and zen video assets, extracted into `public/fetch/`.
 - A mobile-first assistant panel that preserves the prototype's teal/orange design, large animated dog, short prompt suggestions, results below the dog, and optional voice input.
-- Deterministic natural-language parsing for approved TeamUp skill tags, requested quantity, event title/context, and last-minute/urgent requests.
+- Structured AI interpretation for one event, one approved skill, and one quantity when configured, with deterministic natural-language parsing as the rollback and failure fallback.
 - Clarification messages when Fetch cannot identify a skill or event instead of silently guessing.
 - Authenticated searches using the current teacher session and existing Supabase matching functions.
 - Separate labels for full scheduled availability and general availability preferences.
@@ -20,7 +40,7 @@ The local implementation adds:
 - Loading, empty-results, clarification, error, invitation-review, and success states.
 - Unit coverage for intent parsing and availability-result merging.
 
-No database migration, separate credentials, second login, or fictional production data was added.
+One additive database migration provides the global AI request counter. It stores aggregate hourly counts only—never prompts, model output, volunteer data, or teacher identity. No separate login or fictional production data was added.
 
 ## User journey
 
@@ -45,7 +65,9 @@ No database migration, separate credentials, second login, or fictional producti
 
 ### Intent interpretation
 
-`lib/fetch/intent.ts` maps common English phrases and a small set of Hindi and Punjabi phrases to the canonical skills in `sevaSkills`. There is intentionally no language selector. The parser:
+`app/teacher/fetch/openai-intent.ts` calls the provider from the server only. `lib/fetch/llm-intent.ts` owns the strict schema and the second allow-list validation pass. The authenticated action in `app/teacher/fetch/actions.ts` loads manageable upcoming events itself; it does not trust a client-supplied event catalog.
+
+`lib/fetch/intent.ts` remains the deterministic fallback. It maps common English phrases and a small set of Hindi and Punjabi phrases to the canonical skills in `sevaSkills`. There is intentionally no language selector. The parser:
 
 - recognizes quantities from 1–20;
 - resolves a unique event from its title or significant title tokens;
@@ -54,7 +76,7 @@ No database migration, separate credentials, second login, or fictional producti
 - asks for clarification when event or skill context remains ambiguous; and
 - recognizes urgent or last-minute requests without changing event timing.
 
-This deterministic approach is explainable, fast, testable, and does not send personal data to an external AI service.
+This fallback is explainable, fast, testable, and does not send personal data to an external AI service.
 
 ### Matching and availability
 
@@ -107,6 +129,9 @@ Automated tests cover:
 - full schedule versus general-preference labels;
 - deduplication that preserves the stronger availability evidence; and
 - urgent-seva filtering.
+- AI result validation against manageable events, canonical skills, and quantity bounds;
+- safe clarification from structured output; and
+- rejection of model-invented events and skills.
 
 Main manual journeys for local testing:
 

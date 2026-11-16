@@ -4,10 +4,7 @@
 
 TeamUp helps Art of Living teachers coordinate events and invite volunteers for seva. It includes email and Google authentication, role-aware onboarding, teacher and volunteer portals, volunteer matching, invitations, event circles, message boards, and event resources.
 
-[![Production site availability](https://img.shields.io/website?url=https%3A%2F%2Fteamup-gray.vercel.app%2F&label=production%20site&up_message=online&down_message=offline&logo=vercel)](https://teamup-gray.vercel.app)
-[![Hosted on Vercel](https://img.shields.io/badge/hosting-Vercel-black)](https://teamup-gray.vercel.app)
-
-[Open the live demo](https://teamup-gray.vercel.app)
+No public TeamUp deployment URL is published from this repository. Run the app locally or deploy it into an environment you control using the instructions below.
 
 ## Prerequisites
 
